@@ -17,13 +17,6 @@ const items = [
         'Methods of geolocation which can be implemented iteratively to produce standardized coordinate data',
       meta: 'Geolocation',
       href: 'geolocation'
-    },
-    {
-      header: 'Geolocation',
-      description:
-        'Methods of geolocation which can be implemented iteratively to produce standardized coordinate data',
-      meta: 'Geolocation',
-      href: 'geolocation'
     }
 
   ]
@@ -55,10 +48,12 @@ const items = [
 
 const Home = () => (
     <>
-    <Container style={{width: "80%", paddingTop: "5%"}}>
+      <Container style={{width: "80%", paddingTop: "5%", maxHeight: "700px"}}>
         <Grid columns={2} >
-        <Grid.Column>
+        <Grid.Column style = {{paddingRight: "7%"}}>
         <Header size='medium'>Select a worflow</Header>
+        <Divider />
+        <p>Use one of our workflows to follow a step-by-step guided process to turn your data into powerful analysis and visualizations.</p>
         <Card.Group itemsPerRow={2}>
           { items.map( (item,index) =>  <Card
                 key = {`home-${index}}`}
@@ -70,9 +65,12 @@ const Home = () => (
         </Card.Group>
         </Grid.Column>
        
-        <Grid.Column>
+        <Grid.Column style = {{paddingLeft: "7%"}}>
         <Header size='medium'>What do your data look like ?</Header>
-        <Card.Group itemsPerRow={3}>
+        <Divider />
+        <p>Create your own data process by accessing the functionalities across different workflows.</p>
+        
+        <Card.Group itemsPerRow={2}>
           { dataTypes.map( (item,index) =>  <Card
                 key = {`home-${index}}`}
                 header= { item.header }
