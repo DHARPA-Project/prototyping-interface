@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as d3 from 'd3'
 import {Link} from 'react-router-dom'
 import { Segment, Button, Divider, Dimmer, Loader, Message, Container, Form, Select, Header } from 'semantic-ui-react'
+import GeoExplMap from './GeoExplMap';
 
 /*const tooltipOptions = [
     { key: 'bz', value: 'bz', text: 'ersatz_id' },
@@ -61,9 +62,10 @@ const GeoDataLoad = () => {
     </Form>
 
     <Divider></Divider>
+    
     </Container>
     <Container>
-
+      <GeoExplMap map = {usermap} />
     </Container>
     </>       
             
