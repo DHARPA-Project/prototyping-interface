@@ -9,19 +9,19 @@ const TableUnmappable = (props) => (
         <Table.Row>
           <Table.Cell>Missing coordinates</Table.Cell>
           <Table.Cell>
-            {chartLegend[0].absentCoordinates}
+            {props.unmap[0]}
           </Table.Cell>
         </Table.Row>
         <Table.Row>
           <Table.Cell>Not mappable</Table.Cell>
           <Table.Cell>
-          {chartLegend[0].unmappable}
+          { props.unmap[1] }
           </Table.Cell>
         </Table.Row>
         <Table.Row>
           <Table.Cell>Total</Table.Cell>
           <Table.Cell>
-          {chartLegend[0].total}
+          { props.unmap[2]}
           </Table.Cell>
         </Table.Row>
       </Table.Body>
