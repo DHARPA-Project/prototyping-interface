@@ -3,7 +3,6 @@ import { Table } from 'semantic-ui-react'
 
 
 const TableUnmappable = (props) => (
-
     <Table celled collapsing>
       <Table.Body>
         <Table.Row>
@@ -15,13 +14,13 @@ const TableUnmappable = (props) => (
         <Table.Row>
           <Table.Cell>Not mappable</Table.Cell>
           <Table.Cell>
-          { props.unmap[1] }
+            {props.unmap[1]}
           </Table.Cell>
         </Table.Row>
         <Table.Row>
           <Table.Cell>Total</Table.Cell>
           <Table.Cell>
-          { props.unmap[2]}
+            {props.unmap[2]}
           </Table.Cell>
         </Table.Row>
       </Table.Body>

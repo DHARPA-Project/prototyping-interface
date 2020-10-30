@@ -8,17 +8,15 @@ import GeoMappableStats from './GeoMappableStats';
 
 const GeoDataLoad = () => {
 
- 
     let delaunayData = []
     let mappedData = []
-  
 
     const [data, setData] = useState(null);
     const [usermap, setUsermap] = useState(null);
     const [reducedData, setReduceddata] = useState(null);
     const [mapStatsTot, setMapstatstot] = useState(null);
 
-    const zoomed = (evt,width,height,context) => this.zoomed(evt,width,height,context);
+   //const zoomed = (evt,width,height,context) => this.zoomed(evt,width,height,context);
 
     const projection = d3.geoMercator()
 
@@ -56,26 +54,29 @@ const GeoDataLoad = () => {
         }
 
         setMapstatstot([absentCoordinates.length,unmappableItems.length,dataset.length])
+        
 
     })
 
   }
 
-    const fetchData = () => {
+  const fetchData = () => {
           
       d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id.csv").then(dataset => {
-              setData(dataset)
               mapStats(dataset)
+              setData(dataset)
             });
         
       d3.json(process.env.PUBLIC_URL + "world_1914.json").then(usermap => {
               setUsermap(usermap)
             });
 
-      d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => {
+     /* d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => {
         setReduceddata(reducedData)
-        });
+        }); */
     }
+
+  
     
     useEffect(() => {
     fetchData()
@@ -83,8 +84,7 @@ const GeoDataLoad = () => {
 
     
 
-  return (data!=null && usermap !== null) ? (
-           
+  return (data!=null && usermap !== null) ? (        
     <>
     <Container text>
     <Header size='small'>Upload data and basemap</Header>
@@ -130,9 +130,7 @@ const GeoDataLoad = () => {
             <Dimmer active inverted>
               <Loader size='medium' inverted content='Loading' />
             </Dimmer>
-          </Container>)
-    
-        
+          </Container>)     
 }
 
 export default GeoDataLoad;
