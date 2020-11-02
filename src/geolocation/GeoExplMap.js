@@ -141,7 +141,7 @@ const GeoExplMap = (props) => {
 
     return (
 
-        <div style={{position: 'relative', marginLeft: '5%'}}>
+        <div style={{position: 'relative'}}>
         <div ref= {canvasContainer} id="canvasContainer" style={{position: 'absolute', top: 0, left: 0}}></div>
         <svg ref = {svgContainer} id="svgContainer" width='100%' height='420' >
             <g id='map_group' transform={`translate(${x}, ${y}) scale(${k})`}>
