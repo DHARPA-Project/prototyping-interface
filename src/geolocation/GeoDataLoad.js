@@ -8,9 +8,10 @@ import GeoMappableStats from './GeoMappableStats';
 
 const GeoDataLoad = () => {
 
-    let delaunayData = []
+    
     let mappedData = []
 
+    const [delaunayData, setDelaunayData ] = useState(null);
     const [data, setData] = useState(null);
     const [usermap, setUsermap] = useState(null);
     const [reducedData, setReduceddata] = useState(null);
@@ -26,6 +27,7 @@ const GeoDataLoad = () => {
       const unmappableItemsTable = []
       const absentCoordinates = []
       const absentCoordinatesTable = []
+      const mappableItems = []
 
   
       dataset.map((item,index ) => {
@@ -49,11 +51,14 @@ const GeoDataLoad = () => {
         }
 
         else {
-        delaunayData.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
+        mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
         mappedData.push(item);
+
         }
 
         setMapstatstot([absentCoordinates.length,unmappableItems.length,dataset.length])
+        setDelaunayData(mappableItems)
+        
         
 
     })
@@ -84,7 +89,7 @@ const GeoDataLoad = () => {
 
     
 
-  return (data!=null && usermap !== null) ? (        
+  return (data!=null && usermap !== null && delaunayData !== null) ? (        
     <>
     <Container text>
     <Header size='small'>Upload data and basemap</Header>
@@ -119,11 +124,12 @@ const GeoDataLoad = () => {
     <GeoMappableStats  unmap = {mapStatsTot}/>
     <Header size='small'>Explore and edit your dataset</Header>
     <Message>Use the map and the table below the map to explore and edit your dataset. You can save the output via the button below.</Message>
-    <Divider />
     </Container>
+    <Divider></Divider>
     <Container>
-      <GeoExplMap map = {usermap} />
+    <GeoExplMap map = {usermap} data = {delaunayData} />
     </Container>
+    
     </>       
             
           ): (<Container>
