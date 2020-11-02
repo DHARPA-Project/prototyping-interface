@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import * as d3 from 'd3'
 import {Link} from 'react-router-dom'
-import { Segment, Button, Divider, Dimmer, Table, Loader, Message, Container, Form, Select, Header } from 'semantic-ui-react'
+import { Grid, Button, Divider, Dimmer, Table, Loader, Message, Container, Form, Select, Header } from 'semantic-ui-react'
 import GeoExplMap from './GeoExplMap';
 import GeoMappableStats from './GeoMappableStats';
+import GeoMapAccordion from './GeoMapAccordion';
 
 
 const GeoDataLoad = () => {
@@ -125,10 +126,17 @@ const GeoDataLoad = () => {
     <Header size='small'>Explore and edit your dataset</Header>
     <Message>Use the map and the table below the map to explore and edit your dataset. You can save the output via the button below.</Message>
     </Container>
-    <Divider></Divider>
-    <Container>
+    <Divider hidden />
+
+    <Grid>
+    <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
+    <GeoMapAccordion />
+    </Grid.Column>
+    <Grid.Column width = {12}>
     <GeoExplMap map = {usermap} data = {delaunayData} />
-    </Container>
+    </Grid.Column>
+    </Grid>
+
     
     </>       
             
