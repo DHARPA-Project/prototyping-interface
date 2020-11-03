@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3'
 import {Delaunay} from 'd3-delaunay';
-import { Dimmer, Container, Loader} from 'semantic-ui-react'
+import { Dimmer, Container, Loader, Icon} from 'semantic-ui-react'
 
 const GeoExplMap = (props) => {
 
@@ -12,6 +12,8 @@ const GeoExplMap = (props) => {
     const [x, setX] = useState(0);
     const [y, setY] = useState(0);
     const [k, setK] = useState(1);
+    const [totalPoints, setTotalPoints] = useState(0);
+    const [displayedPoints, setDisplayedPoints] = useState(0);
 
     const [userCatCol, setUserCatCol] = useState(null);
 
@@ -19,6 +21,8 @@ const GeoExplMap = (props) => {
     const mainColor1 = 'rgba(70, 130, 180, .5)' // map circles fill
     const mainColor2 = 'rgba(70, 130, 180, .9)' // map circles stroke
     const mainColor3 = 'rgb(0,0,0)' // circle that appears when clicking on map
+
+    // settings and paths for the basemap
 
     const projection = d3.geoMercator();
 
@@ -32,6 +36,8 @@ const GeoExplMap = (props) => {
     basemap.features.map((item,index) => {
             map_path.push(<path d={path(item)} style = {{fill: 'lightGrey', stroke: 'white', strokeWidth: 0.5}}/>)
         })
+
+    // quadtree enables to draw only the points displayed (zoom)
 
     let setQuadtree = (data) => {
         const quadtree = d3.quadtree()
@@ -58,8 +64,6 @@ const GeoExplMap = (props) => {
     }
 
     let drawCanvas = (context,points,evt,width,height) => {
-        
-        
         context.save();
         context.clearRect(0, 0, width, height);
         context.translate(evt.x, evt.y);
@@ -68,7 +72,6 @@ const GeoExplMap = (props) => {
         context.lineWidth = .7;
 
         points.forEach(item => {
-
             context.fillStyle = mainColor1;
             context.strokeStyle = mainColor2;   
             context.beginPath();
@@ -84,6 +87,15 @@ const GeoExplMap = (props) => {
 
     }
 
+    // display of number of observations on the map
+    let mapStats = (dataLength,points) => {
+        
+        setTotalPoints(dataLength);
+        setDisplayedPoints(points.length)
+
+    }
+
+    //zoom is called everytime the map is displayed (with a value of 0 by default), and initiates canvas circles drawing 
     let zoomed = (evt,width,height,context,data) => {
         
         if (evt == 0) {evt = {}; evt.k = 1; evt.x = 0; evt.y = 0;}
@@ -95,9 +107,21 @@ const GeoExplMap = (props) => {
         const points = searchQuadtree(quadtree,viewbox[0][0],viewbox[0][1],viewbox[1][0],viewbox[1][1]);
 
         drawCanvas(context,points,evt,width,height)
+        mapStats(data.length,points)
     }
 
-    let singleColorScale = (data) => {
+    let attachEvents = (width,height,context,container,delaunay) => {
+
+        container.on("mousemove", evt => {
+            this.handleMouseMove(d3.event,width,height,context,delaunay)
+          });
+        
+          container.on("click", evt => {
+            this.handleMapClick(d3.event,width,height,context,delaunay)
+          });
+    }
+
+    /*let singleColorScale = (data) => {
 
         const colors = ['rgb(47, 126, 188)', 'rgb(24, 100, 170)','rgb(8, 61, 126)' ,'rgb(8,48,107)']
 
@@ -113,7 +137,7 @@ const GeoExplMap = (props) => {
         
           const tot = data2.map(item => +item.count).reduce((prev, next) => prev + next);
           
-    }
+    }*/
 
 
    useEffect(() => {
@@ -129,6 +153,7 @@ const GeoExplMap = (props) => {
        const context = canvas.node().getContext("2d");
 
         container.call(d3.zoom().on("zoom", function() {
+            // record the transformation to apply it also to svg content
             setX(d3.event.transform.x);
             setY(d3.event.transform.y);
             setK(d3.event.transform.k);
@@ -140,7 +165,9 @@ const GeoExplMap = (props) => {
     }, []);
 
     return (
-
+        <>
+         <Container> <p>{displayedPoints ==! 0? totalPoints : displayedPoints} of {totalPoints} mappable observations displayed. <Icon name='info circle' color='grey'></Icon></p>  
+      </Container>
         <div style={{position: 'relative'}}>
         <div ref= {canvasContainer} id="canvasContainer" style={{position: 'absolute', top: 0, left: 0}}></div>
         <svg ref = {svgContainer} id="svgContainer" width='100%' height='420' >
@@ -149,7 +176,7 @@ const GeoExplMap = (props) => {
             </g>
         </svg>
         </div>
-       
+       </>
 
     )
 
