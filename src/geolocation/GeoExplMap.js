@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3'
 import {Delaunay} from 'd3-delaunay';
-import { Dimmer, Container, Loader, Icon} from 'semantic-ui-react'
+import { Grid, Container, Card, Icon} from 'semantic-ui-react';
+import GeoMapAccordion from './GeoMapAccordion';
+import { Tooltip } from 'recharts';
+
 
 const GeoExplMap = (props) => {
 
@@ -9,12 +12,19 @@ const GeoExplMap = (props) => {
     const svgContainer = useRef(null);
    // (didn't manage to make the refs work with d3 selections, so I used the ids for now)
 
-    const [x, setX] = useState(0);
-    const [y, setY] = useState(0);
-    const [k, setK] = useState(1);
+    let x = 0;
+    let y = 0;
+    let k = 1;
+    // zoom params also stored in state for svg 
+    const [xSvg, setXSvg] = useState(0);
+    const [ySvg, setYSvg] = useState(0);
+    const [kSvg, setKSvg] = useState(1);
+    
     const [totalPoints, setTotalPoints] = useState(0);
     const [displayedPoints, setDisplayedPoints] = useState(0);
-
+    const [tooltipData, setTooltipData] = useState(null);
+    const [tooltipDisplay, setTooltipDisplay] = useState('none');
+    const [circleCoords, setCircleCoords] = useState(null)
     const [userCatCol, setUserCatCol] = useState(null);
 
     const r = 2.5;
@@ -34,7 +44,7 @@ const GeoExplMap = (props) => {
     let map_path = [];
 
     basemap.features.map((item,index) => {
-            map_path.push(<path d={path(item)} style = {{fill: 'lightGrey', stroke: 'white', strokeWidth: 0.5}}/>)
+            map_path.push(<path d={path(item)} style = {{fill: 'rgba(211,211,211,.8)', stroke: 'white', strokeWidth: 0.5}}/>)
         })
 
     // quadtree enables to draw only the points displayed (zoom)
@@ -63,12 +73,24 @@ const GeoExplMap = (props) => {
 
     }
 
-    let drawCanvas = (context,points,evt,width,height) => {
+    let quadtreeRes = (data,width,height) => {
+        const viewbox = [ [(0 - x) / k, (0 - y) / k],  [(width - x) / k, (height - y) / k]];
+
+        const quadtree = setQuadtree(data);
+
+        const points = searchQuadtree(quadtree,viewbox[0][0],viewbox[0][1],viewbox[1][0],viewbox[1][1]);
+
+        return points
+
+    }
+
+    let drawCanvas = (context,points,width,height,status,p) => {
+
         context.save();
         context.clearRect(0, 0, width, height);
-        context.translate(evt.x, evt.y);
-        context.scale(evt.k, evt.k);
-        context.globalAlpha = .5;
+        context.translate(x, y);
+        context.scale(k, k);
+        context.globalAlpha = .7;
         context.lineWidth = .7;
 
         points.forEach(item => {
@@ -81,44 +103,66 @@ const GeoExplMap = (props) => {
             context.fill();
             context.closePath();
         })
+
+        if (status == 'mousemove') {
+
+            context.globalAlpha = 1;
+            context.fillStyle = 'rgba(0, 0, 0,.7)';
+            context.strokeStyle = 'rgb(0, 0, 0)';
+            context.lineWidth = 1;
+            
+            context.beginPath();
+            context.moveTo(props.data[p][0] + r, props.data[p][1]);
+            context.arc(props.data[p][0], props.data[p][1], r*1.1, 0, 2 * Math.PI);
+            context.stroke();
+            context.closePath();
+
+        }
         
         context.restore();
-        context.save();
+        context.save(); 
 
     }
 
     // display of number of observations on the map
     let mapStats = (dataLength,points) => {
-        
         setTotalPoints(dataLength);
         setDisplayedPoints(points.length)
-
     }
+
 
     //zoom is called everytime the map is displayed (with a value of 0 by default), and initiates canvas circles drawing 
+
     let zoomed = (evt,width,height,context,data) => {
-        
-        if (evt == 0) {evt = {}; evt.k = 1; evt.x = 0; evt.y = 0;}
-        
-        const viewbox = [ [(0 - evt.x) / evt.k, (0 - evt.y) / evt.k],  [(width - evt.x) / evt.k, (height - evt.y) / evt.k]];
-
-        const quadtree = setQuadtree(data);
-
-        const points = searchQuadtree(quadtree,viewbox[0][0],viewbox[0][1],viewbox[1][0],viewbox[1][1]);
-
-        drawCanvas(context,points,evt,width,height)
-        mapStats(data.length,points)
+        if (evt == 0) {evt = {}; evt.k = 1; evt.x = 0; evt.y = 0;} 
+        const points = quadtreeRes(data,width,height)
+        drawCanvas(context,points,width,height);
+        mapStats(data.length,points);
     }
 
-    let attachEvents = (width,height,context,container,delaunay) => {
+    let handleMouseMove = (evt,width,height,context,delaunay,data) => {
+        let [rmx, rmy] = [evt.layerX, evt.layerY];
+        const point = [rmx,rmy]
+        const new_point = [(point[0] - x) / k, (point[1] - y) / k];
+        const p = delaunay.find(new_point[0], new_point[1]);
+        setTooltipData(p);
+        setTooltipDisplay('inline');
+        setCircleCoords([evt.pageX,evt.pageY]);
+        const points = quadtreeRes(data,width,height);
+        drawCanvas(context,points,width,height,'mousemove',p);
+    }
+
+    let attachEvents = (width,height,context,container,data) => {
+
+        const delaunay = Delaunay.from(data);
 
         container.on("mousemove", evt => {
-            this.handleMouseMove(d3.event,width,height,context,delaunay)
+            handleMouseMove(d3.event,width,height,context,delaunay,data)
           });
         
-          container.on("click", evt => {
-            this.handleMapClick(d3.event,width,height,context,delaunay)
-          });
+        container.on("click", evt => {
+        // handleMapClick(d3.event,width,height,context,delaunay)
+        });
     }
 
     /*let singleColorScale = (data) => {
@@ -149,37 +193,73 @@ const GeoExplMap = (props) => {
        const canvas = d3.select("#canvasContainer").append("canvas").attr('width', width).attr('height', height).style("cursor", "pointer");
 
        const container = d3.select("#canvasContainer");
-
        const context = canvas.node().getContext("2d");
 
         container.call(d3.zoom().on("zoom", function() {
-            // record the transformation to apply it also to svg content
-            setX(d3.event.transform.x);
-            setY(d3.event.transform.y);
-            setK(d3.event.transform.k);
+            x = d3.event.transform.x;
+            y = d3.event.transform.y;
+            k = d3.event.transform.k;
+            setXSvg(d3.event.transform.x);
+            setYSvg(d3.event.transform.y);
+            setKSvg(d3.event.transform.k);
+            // didn't manage to create a callback, this would be better as event wouldn't be needed in zoomed func as it would be already in the state
             zoomed(d3.event.transform,width,height,context,props.data);
+            
          }) );
 
+        attachEvents(width,height,context,container,props.data);
         zoomed(0,width,height,context,props.data);
+        
 
     }, []);
 
+
+
+    const TooltipContent = []
+
+       if ( tooltipData!= null) {
+            TooltipContent.push(<Card.Content><span>ersatz_id: {props.fullData[tooltipData]['ersatz_id']} | </span><span>rawPOB: {props.fullData[tooltipData]['rawPOB']} | </span><span>GCcleanPOBprec: {props.fullData[tooltipData]['GCcleanPOBprec']}</span></Card.Content>)
+       }
+
     return (
         <>
-         <Container> <p>{displayedPoints ==! 0? totalPoints : displayedPoints} of {totalPoints} mappable observations displayed. <Icon name='info circle' color='grey'></Icon></p>  
-      </Container>
-        <div style={{position: 'relative'}}>
-        <div ref= {canvasContainer} id="canvasContainer" style={{position: 'absolute', top: 0, left: 0}}></div>
-        <svg ref = {svgContainer} id="svgContainer" width='100%' height='420' >
-            <g id='map_group' transform={`translate(${x}, ${y}) scale(${k})`}>
-                {map_path}
-            </g>
-        </svg>
-        </div>
+        <Grid>
+            <Grid.Row>
+            <Grid.Column width = {3} style = {{marginLeft: '2%'}} />
+            <Grid.Column width = {6}>
+            <Tooltip />
+            <Container ><div style = {{display: tooltipDisplay}}>
+                    {TooltipContent}
+            </div></Container>
+            </Grid.Column>
+            <Grid.Column width = {6}>
+            <Container fluid textAlign='right'> <p>{displayedPoints ==! 0? totalPoints : displayedPoints} of {totalPoints} mappable observations displayed. <Icon name='info circle' color='grey'></Icon></p>  
+            </Container>
+            </Grid.Column>
+            </Grid.Row>
+            <Grid.Row>
+            <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
+            <GeoMapAccordion />
+            </Grid.Column>
+            <Grid.Column width = {12}>
+                <div style={{position: 'relative'}}>
+                <div ref= {canvasContainer} id="canvasContainer" style={{position: 'absolute', top: 0, left: 0}}></div>
+                <svg ref = {svgContainer} id="svgContainer" width='100%' height='420' >
+                    <g id='map_group' transform={`translate(${xSvg}, ${ySvg}) scale(${kSvg})`}>
+                        {map_path}
+                    </g>
+                </svg>
+                </div>
+            </Grid.Column>
+            </Grid.Row>
+            
+        </Grid>
+         
        </>
 
     )
 
 }
+
 
 export default GeoExplMap;

@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import * as d3 from 'd3'
 import {Link} from 'react-router-dom'
-import { Grid, Button, Divider, Dimmer, Table, Loader, Message, Container, Form, Select, Header } from 'semantic-ui-react'
+import { Button, Divider, Dimmer, Table, Loader, Message, Container, Form, Select, Header } from 'semantic-ui-react'
 import GeoExplMap from './GeoExplMap';
 import GeoMappableStats from './GeoMappableStats';
-import GeoMapAccordion from './GeoMapAccordion';
 
 
 const GeoDataLoad = () => {
 
-    
-    let mappedData = []
-
+    const [fullData, setFullData] = useState(null);
     const [delaunayData, setDelaunayData ] = useState(null);
     const [data, setData] = useState(null);
     const [usermap, setUsermap] = useState(null);
@@ -29,6 +26,7 @@ const GeoDataLoad = () => {
       const absentCoordinates = []
       const absentCoordinatesTable = []
       const mappableItems = []
+      const fullItems = []
 
   
       dataset.map((item,index ) => {
@@ -52,15 +50,16 @@ const GeoDataLoad = () => {
         }
 
         else {
+        
         mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
-        mappedData.push(item);
+        
+        fullItems.push(item);
 
         }
 
         setMapstatstot([absentCoordinates.length,unmappableItems.length,dataset.length])
         setDelaunayData(mappableItems)
-        
-        
+        setFullData(fullItems)
 
     })
 
@@ -68,7 +67,7 @@ const GeoDataLoad = () => {
 
   const fetchData = () => {
           
-      d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id.csv").then(dataset => {
+      d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id_2.csv").then(dataset => {
               mapStats(dataset)
               setData(dataset)
             });
@@ -128,14 +127,7 @@ const GeoDataLoad = () => {
     </Container>
     <Divider hidden />
 
-    <Grid>
-    <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
-    <GeoMapAccordion />
-    </Grid.Column>
-    <Grid.Column width = {12}>
-    <GeoExplMap map = {usermap} data = {delaunayData} />
-    </Grid.Column>
-    </Grid>
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} />
 
     
     </>       
