@@ -105,7 +105,6 @@ const GeoExplMap = (props) => {
         })
 
         if (status == 'mousemove') {
-
             context.globalAlpha = 1;
             context.fillStyle = 'rgba(0, 0, 0,.7)';
             context.strokeStyle = 'rgb(0, 0, 0)';
@@ -116,7 +115,6 @@ const GeoExplMap = (props) => {
             context.arc(props.data[p][0], props.data[p][1], r*1.1, 0, 2 * Math.PI);
             context.stroke();
             context.closePath();
-
         }
         
         context.restore();
@@ -127,7 +125,7 @@ const GeoExplMap = (props) => {
     // display of number of observations on the map
     let mapStats = (dataLength,points) => {
         setTotalPoints(dataLength);
-        setDisplayedPoints(points.length)
+        setDisplayedPoints(points.length);
     }
 
 

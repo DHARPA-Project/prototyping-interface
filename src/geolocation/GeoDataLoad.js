@@ -10,9 +10,9 @@ const GeoDataLoad = () => {
 
     const [fullData, setFullData] = useState(null);
     const [delaunayData, setDelaunayData ] = useState(null);
-    const [data, setData] = useState(null);
+    //const [data, setData] = useState(null);
     const [usermap, setUsermap] = useState(null);
-    const [reducedData, setReduceddata] = useState(null);
+    //const [reducedData, setReduceddata] = useState(null);
     const [mapStatsTot, setMapstatstot] = useState(null);
 
    //const zoomed = (evt,width,height,context) => this.zoomed(evt,width,height,context);
@@ -25,7 +25,6 @@ const GeoDataLoad = () => {
       const unmappableItemsTable = []
       const absentCoordinates = []
       const absentCoordinatesTable = []
-      const mappableItems = []
       const fullItems = []
 
   
@@ -50,35 +49,54 @@ const GeoDataLoad = () => {
         }
 
         else {
-        
-        mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
-        
-        fullItems.push(item);
+
+          // second array contains the full data, when finding a point with delaunay, the data can be retrieved with ID returned by delaunay calculations
+          fullItems.push(item);
 
         }
 
+       // const tot = dataset.map(item => +item.count).reduce((prev, next) => prev + next);
+
         setMapstatstot([absentCoordinates.length,unmappableItems.length,dataset.length])
-        setDelaunayData(mappableItems)
+
         setFullData(fullItems)
 
     })
 
   }
 
+  const getDelaunayData = (dataset) => {
+
+    // array that only contains latitude and longitude (fields necessary for delaunay calculations at the map stage) of points that will be drawned
+
+    const mappableItems = []
+
+    dataset.map((item,index) => {
+        
+        mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
+    })
+
+    setDelaunayData(mappableItems);
+
+  }
+
   const fetchData = () => {
           
-      d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id_2.csv").then(dataset => {
+      d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id.csv").then(dataset => {
               mapStats(dataset)
-              setData(dataset)
             });
+
+      // second dataset will be created in Python from the first dataset to group circles that have same coordinates and provide with a "count" column used for single color hue
+     
+      d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => {
+              getDelaunayData(reducedData)
+          }); 
         
       d3.json(process.env.PUBLIC_URL + "world_1914.json").then(usermap => {
               setUsermap(usermap)
             });
 
-     /* d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => {
-        setReduceddata(reducedData)
-        }); */
+      
     }
 
   
@@ -89,7 +107,7 @@ const GeoDataLoad = () => {
 
     
 
-  return (data!=null && usermap !== null && delaunayData !== null) ? (        
+  return (usermap !== null && delaunayData !== null && fullData !== null) ? (        
     <>
     <Container text>
     <Header size='small'>Upload data and basemap</Header>
@@ -126,9 +144,6 @@ const GeoDataLoad = () => {
     <Message>Use the map and the table below the map to explore and edit your dataset. You can save the output via the button below.</Message>
     </Container>
     <Divider hidden />
-
-    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} />
-
     
     </>       
             
@@ -140,3 +155,6 @@ const GeoDataLoad = () => {
 }
 
 export default GeoDataLoad;
+
+ // <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} />
+
