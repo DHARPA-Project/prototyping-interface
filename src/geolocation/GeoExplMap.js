@@ -26,6 +26,7 @@ const GeoExplMap = (props) => {
     const [tooltipDisplay, setTooltipDisplay] = useState('none');
     const [circleCoords, setCircleCoords] = useState(null)
     const [userCatCol, setUserCatCol] = useState(null);
+    
 
     const r = 2.5;
     const mainColor1 = 'rgba(70, 130, 180, .5)' // map circles fill
@@ -131,11 +132,13 @@ const GeoExplMap = (props) => {
 
     //zoom is called everytime the map is displayed (with a value of 0 by default), and initiates canvas circles drawing 
 
-    let zoomed = (evt,width,height,context,data) => {
+    let zoomed = (evt,width,height,context,data,fulldata) => {
         if (evt == 0) {evt = {}; evt.k = 1; evt.x = 0; evt.y = 0;} 
         const points = quadtreeRes(data,width,height)
         drawCanvas(context,points,width,height);
-        mapStats(data.length,points);
+
+      
+       // mapStats(data.length,points);
     }
 
     let handleMouseMove = (evt,width,height,context,delaunay,data) => {
@@ -150,7 +153,7 @@ const GeoExplMap = (props) => {
         drawCanvas(context,points,width,height,'mousemove',p);
     }
 
-    let attachEvents = (width,height,context,container,data) => {
+    let attachEvents = (width,height,context,container,data,fulldata) => {
 
         const delaunay = Delaunay.from(data);
 
@@ -193,6 +196,8 @@ const GeoExplMap = (props) => {
        const container = d3.select("#canvasContainer");
        const context = canvas.node().getContext("2d");
 
+       console.log(props.fullData.length)
+
         container.call(d3.zoom().on("zoom", function() {
             x = d3.event.transform.x;
             y = d3.event.transform.y;
@@ -201,12 +206,13 @@ const GeoExplMap = (props) => {
             setYSvg(d3.event.transform.y);
             setKSvg(d3.event.transform.k);
             // didn't manage to create a callback, this would be better as event wouldn't be needed in zoomed func as it would be already in the state
-            zoomed(d3.event.transform,width,height,context,props.data);
+            zoomed(d3.event.transform,width,height,context,props.data, props.fulldata);
             
          }) );
 
-        attachEvents(width,height,context,container,props.data);
-        zoomed(0,width,height,context,props.data);
+         
+        attachEvents(width,height,context,container,props.data, props.fulldata);
+        zoomed(0,width,height,context,props.data, props.fulldata);
         
 
     }, []);

@@ -6,100 +6,79 @@ import GeoExplMap from './GeoExplMap';
 import GeoMappableStats from './GeoMappableStats';
 
 
+const unmappableItems = []
+const absentCoordinates = []
+const fullItems = []
+const mappableItems = [] 
+
+// variables for tables that will be displayed under the map for missing and unmappable coordinates
+const unmappableItemsTable = []
+const absentCoordinatesTable = []
+
+
 const GeoDataLoad = () => {
 
     const [fullData, setFullData] = useState(null);
     const [delaunayData, setDelaunayData ] = useState(null);
-    //const [data, setData] = useState(null);
     const [usermap, setUsermap] = useState(null);
-    //const [reducedData, setReduceddata] = useState(null);
-    const [mapStatsTot, setMapstatstot] = useState(null);
-
-   //const zoomed = (evt,width,height,context) => this.zoomed(evt,width,height,context);
 
     const projection = d3.geoMercator()
 
-    const mapStats = (dataset) => {
-
-      const unmappableItems = []
-      const unmappableItemsTable = []
-      const absentCoordinates = []
-      const absentCoordinatesTable = []
-      const fullItems = []
-
-  
-      dataset.map((item,index ) => {
-
-        if (isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) {
-          unmappableItems.push(item)
-          unmappableItemsTable.push(<Table.Row>
-            <Table.Cell>{item['ersatz_id']}</Table.Cell>
-            <Table.Cell>{item['rawPOB']}</Table.Cell>
-            <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
-          </Table.Row>)
-        }
-      
-        if ( +item.GCcleanPOBlon == 0 || +item.GCcleanPOBlon == 0) {
-          absentCoordinates.push(item)
-          absentCoordinatesTable.push(<Table.Row>
-            <Table.Cell>{item['ersatz_id']}</Table.Cell>
-            <Table.Cell>{item['rawPOB']}</Table.Cell>
-            <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
-          </Table.Row>)
-        }
-
-        else {
-
-          // second array contains the full data, when finding a point with delaunay, the data can be retrieved with ID returned by delaunay calculations
-          fullItems.push(item);
-
-        }
-
-       // const tot = dataset.map(item => +item.count).reduce((prev, next) => prev + next);
-
-        setMapstatstot([absentCoordinates.length,unmappableItems.length,dataset.length])
-
-        setFullData(fullItems)
-
-    })
-
-  }
-
-  const getDelaunayData = (dataset) => {
-
-    // array that only contains latitude and longitude (fields necessary for delaunay calculations at the map stage) of points that will be drawned
-
-    const mappableItems = []
-
-    dataset.map((item,index) => {
-        
-        mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
-    })
-
-    setDelaunayData(mappableItems);
-
-  }
 
   const fetchData = () => {
+
           
       d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id.csv").then(dataset => {
-              mapStats(dataset)
-            });
+  
+        dataset.map((item,index ) => {
+  
+          if (isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) {
+            unmappableItems.push(item)
+            unmappableItemsTable.push(<Table.Row>
+              <Table.Cell>{item['ersatz_id']}</Table.Cell>
+              <Table.Cell>{item['rawPOB']}</Table.Cell>
+              <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
+            </Table.Row>)
+          }
+        
+          if ( +item.GCcleanPOBlon == 0 || +item.GCcleanPOBlon == 0) {
+            absentCoordinates.push(item)
+            absentCoordinatesTable.push(<Table.Row>
+              <Table.Cell>{item['ersatz_id']}</Table.Cell>
+              <Table.Cell>{item['rawPOB']}</Table.Cell>
+              <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
+            </Table.Row>)
+          }
+  
+          else {
+  
+            // full dataset will be used when finding a point on map with delaunay (unique locations), so that all points with same coords can be retrieved and inserted into dataframe view
+            fullItems.push(item);
+  
+          }
 
-      // second dataset will be created in Python from the first dataset to group circles that have same coordinates and provide with a "count" column used for single color hue
+        }); }).then(() => {
+          setFullData(fullItems)
+
+        });
+
+      // following dataset will be created with Python from the first dataset after user upload, in order to group circles that have same coordinates and provide with a "count" column used for single color hue/displaying one point on the map for same location to improve perf
      
-      d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => {
-              getDelaunayData(reducedData)
+      d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => { 
+          reducedData.map((item,index) => {    
+                mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
+            })
+            
+          }).then(() => {
+            setDelaunayData(mappableItems);
           }); 
         
       d3.json(process.env.PUBLIC_URL + "world_1914.json").then(usermap => {
               setUsermap(usermap)
             });
 
-      
-    }
 
-  
+  }
     
     useEffect(() => {
     fetchData()
@@ -107,7 +86,7 @@ const GeoDataLoad = () => {
 
     
 
-  return (usermap !== null && delaunayData !== null && fullData !== null) ? (        
+  return (usermap !== null && delaunayData !== null && fullData !== null && unmappableItems !== null) ? (        
     <>
     <Container text>
     <Header size='small'>Upload data and basemap</Header>
@@ -139,11 +118,13 @@ const GeoDataLoad = () => {
     <Divider></Divider>
     <Header size='small'>Unmappable observations</Header>
         <Message>The table below provides information about points that couldn't be plotted on the map, and points without latitude and longitude.</Message>
-    <GeoMappableStats  unmap = {mapStatsTot}/>
+    <GeoMappableStats  stats = {[absentCoordinates.length,unmappableItems.length,fullItems.length]}/>
     <Header size='small'>Explore and edit your dataset</Header>
     <Message>Use the map and the table below the map to explore and edit your dataset. You can save the output via the button below.</Message>
     </Container>
     <Divider hidden />
+
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} />
     
     </>       
             
@@ -156,5 +137,5 @@ const GeoDataLoad = () => {
 
 export default GeoDataLoad;
 
- // <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} />
+ 
 
