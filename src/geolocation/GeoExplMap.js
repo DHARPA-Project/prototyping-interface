@@ -25,8 +25,8 @@ const GeoExplMap = (props) => {
     const [displayedPoints, setDisplayedPoints] = useState(0);
     const [tooltipData, setTooltipData] = useState(null);
     const [tooltipDisplay, setTooltipDisplay] = useState('none');
-    const [circleCoords, setCircleCoords] = useState(null)
-    const [userCatCol, setUserCatCol] = useState(null);
+    
+    let mapClickStatus = 'off';
     
 
     const r = 2.5;
@@ -88,6 +88,7 @@ const GeoExplMap = (props) => {
 
     let drawCanvas = (context,points,width,height,status,p) => {
 
+        if (mapClickStatus === 'off') {
         context.save();
         context.clearRect(0, 0, width, height);
         context.translate(x, y);
@@ -106,23 +107,37 @@ const GeoExplMap = (props) => {
             context.closePath();
         })
 
-        if (status == 'mousemove') {
+        if (status == 'mousemove' || status == 'mouseclick') {
+            
             context.globalAlpha = 1;
             context.fillStyle = 'rgba(0, 0, 0,.7)';
             context.strokeStyle = 'rgb(0, 0, 0)';
             context.lineWidth = 1;
             
             context.beginPath();
-            context.moveTo(props.data[p][0] + r, props.data[p][1]);
-            context.arc(props.data[p][0], props.data[p][1], r*1.1, 0, 2 * Math.PI);
+
+            if (status === 'mousemove') {
+                context.moveTo(props.data[p][0] + r, props.data[p][1]);
+                context.arc(props.data[p][0], props.data[p][1], r*1.1, 0, 2 * Math.PI);
+            }
+
+            if (status === 'mouseclick') {     
+                context.arc(props.data[p][0], props.data[p][1], r*3, 0, 2 * Math.PI);
+                mapClickStatus = 'on';
+            }
+            
             context.stroke();
             context.closePath();
+            
         }
         
         context.restore();
         context.save(); 
 
+        }
     }
+
+
 
     let mapStats = (points) => {
         const totData = props.reducedData.map(item => +item.count).reduce((prev, next) => prev + next);
@@ -142,28 +157,49 @@ const GeoExplMap = (props) => {
         mapStats(points);
     }
 
-    let handleMouseMove = (evt,width,height,context,delaunay,data) => {
+    let mousePreProcess = (evt,data,delaunay,width,height) => {
         let [rmx, rmy] = [evt.layerX, evt.layerY];
         const point = [rmx,rmy]
         const new_point = [(point[0] - x) / k, (point[1] - y) / k];
         const p = delaunay.find(new_point[0], new_point[1]);
         setTooltipData(p);
         setTooltipDisplay('inline');
-        setCircleCoords([evt.pageX,evt.pageY]);
         const points = quadtreeRes(data,width,height);
-        drawCanvas(context,points,width,height,'mousemove',p);
+        return [p,points]
     }
 
-    let attachEvents = (width,height,context,container,data,fulldata) => {
+    let handleMouseMove = (evt,width,height,context,delaunay,data) => {
+        if (mapClickStatus === 'off') {
+        const res = mousePreProcess(evt,data,delaunay,width,height);
+        drawCanvas(context,res[1],width,height,'mousemove',res[0]);
+        }
+    }
 
+    let handleMouseClick = (evt,width,height,context,delaunay,data) => {
+
+        if (mapClickStatus === 'off') {
+            const res = mousePreProcess(evt,data,delaunay,width,height);
+            drawCanvas(context,res[1],width,height,'mouseclick',res[0]);
+        }
+
+        else if (mapClickStatus == 'on') {
+            mapClickStatus = 'off';
+            const res = mousePreProcess(evt,data,delaunay,width,height);
+            drawCanvas(context,res[1],width,height,'mousemove',res[0]);
+        }
+        
+    }
+
+
+    let attachEvents = (width,height,context,container,data,fulldata) => {
         const delaunay = Delaunay.from(data);
 
         container.on("mousemove", evt => {
             handleMouseMove(d3.event,width,height,context,delaunay,data)
           });
-        
+
         container.on("click", evt => {
-        // handleMapClick(d3.event,width,height,context,delaunay)
+            handleMouseClick(d3.event,width,height,context,delaunay,data)
         });
     }
 
