@@ -124,23 +124,14 @@ const GeoExplMap = (props) => {
 
     }
 
-    let circlesCount = (points) => {
-        
+    let mapStats = (points) => {
         const totData = props.reducedData.map(item => +item.count).reduce((prev, next) => prev + next);
         const totCircles = points.map((item,index) => +props.reducedData[index].count).reduce((prev, next) => prev + next);
-
-        return [totData, totCircles]
-
-    }
-
-    // display of number of observations on the map
-    let mapStats = (points) => {
-        const stats = circlesCount(points);
-        const totPoints = stats[0];
-        const totCircles = stats[1];
-        setTotalPoints(totPoints);
+        
+        setTotalPoints(totData);
         setDisplayedPoints(totCircles);
     }
+
 
     //zoom is called everytime the map is displayed (with a value of 0 by default), and initiates canvas circles drawing 
 
