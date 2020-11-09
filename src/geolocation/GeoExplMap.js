@@ -3,6 +3,7 @@ import * as d3 from 'd3'
 import {Delaunay} from 'd3-delaunay';
 import { Grid, Container, Card, Icon} from 'semantic-ui-react';
 import GeoMapAccordion from './GeoMapAccordion';
+import GeoDataFrame from './GeoDataFrame';
 import { Tooltip } from 'recharts';
 
 
@@ -175,24 +176,6 @@ const GeoExplMap = (props) => {
         });
     }
 
-    /*let singleColorScale = (data) => {
-
-        const colors = ['rgb(47, 126, 188)', 'rgb(24, 100, 170)','rgb(8, 61, 126)' ,'rgb(8,48,107)']
-
-        const interpolate = d3.interpolateRgbBasis(colors);
-
-        const colorScale = d3.scaleLinear()
-            .domain([d3.min(data, d => +d.count), d3.max(data, d => +d.count)])
-            .range([0, 3]);
-
-        const data2 = data.map((element,index) => (
-            { 0:element[0], 1:element[1], scanned: 'true', selected: 'true', color: interpolate(colorScale(+data[index].count)), ersatz_id: data[index].ersatz_id, count: data[index].count, pos: data[index].GCcleanPOBprec
-          }));
-        
-          const tot = data2.map(item => +item.count).reduce((prev, next) => prev + next);
-          
-    }*/
-
 
    useEffect(() => {
        
@@ -262,6 +245,7 @@ const GeoExplMap = (props) => {
                     </g>
                 </svg>
                 </div>
+                <GeoDataFrame unmapTab = {props.unmapTab} absTab = {props.absTab}/>
             </Grid.Column>
             </Grid.Row>
             
@@ -270,7 +254,6 @@ const GeoExplMap = (props) => {
        </>
 
     )
-
 }
 
 

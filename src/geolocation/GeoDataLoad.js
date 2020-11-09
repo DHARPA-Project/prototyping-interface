@@ -127,7 +127,7 @@ const GeoDataLoad = () => {
     </Container>
     <Divider hidden />
 
-    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData}/>
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItemsTable} absTab = {absentCoordinatesTable}/>
     
     </>       
             
