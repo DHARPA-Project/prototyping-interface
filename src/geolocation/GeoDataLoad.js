@@ -20,6 +20,7 @@ const GeoDataLoad = () => {
 
     const [fullData, setFullData] = useState(null);
     const [delaunayData, setDelaunayData ] = useState(null);
+    const [reducedData, setReducedData ] = useState(null);
     const [usermap, setUsermap] = useState(null);
 
     const projection = d3.geoMercator()
@@ -65,6 +66,8 @@ const GeoDataLoad = () => {
       // following dataset will be created with Python from the first dataset after user upload, in order to group circles that have same coordinates and provide with a "count" column used for single color hue/displaying one point on the map for same location to improve perf
      
       d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => { 
+
+          setReducedData(reducedData);
           reducedData.map((item,index) => {    
                 mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
             })
@@ -124,7 +127,7 @@ const GeoDataLoad = () => {
     </Container>
     <Divider hidden />
 
-    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} />
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData}/>
     
     </>       
             

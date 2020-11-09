@@ -123,12 +123,23 @@ const GeoExplMap = (props) => {
 
     }
 
-    // display of number of observations on the map
-    let mapStats = (dataLength,points) => {
-        setTotalPoints(dataLength);
-        setDisplayedPoints(points.length);
+    let circlesCount = (points) => {
+        
+        const totData = props.reducedData.map(item => +item.count).reduce((prev, next) => prev + next);
+        const totCircles = points.map((item,index) => +props.reducedData[index].count).reduce((prev, next) => prev + next);
+
+        return [totData, totCircles]
+
     }
 
+    // display of number of observations on the map
+    let mapStats = (points) => {
+        const stats = circlesCount(points);
+        const totPoints = stats[0];
+        const totCircles = stats[1];
+        setTotalPoints(totPoints);
+        setDisplayedPoints(totCircles);
+    }
 
     //zoom is called everytime the map is displayed (with a value of 0 by default), and initiates canvas circles drawing 
 
@@ -136,9 +147,7 @@ const GeoExplMap = (props) => {
         if (evt == 0) {evt = {}; evt.k = 1; evt.x = 0; evt.y = 0;} 
         const points = quadtreeRes(data,width,height)
         drawCanvas(context,points,width,height);
-
-      
-       // mapStats(data.length,points);
+        mapStats(points);
     }
 
     let handleMouseMove = (evt,width,height,context,delaunay,data) => {
@@ -196,7 +205,6 @@ const GeoExplMap = (props) => {
        const container = d3.select("#canvasContainer");
        const context = canvas.node().getContext("2d");
 
-       console.log(props.fullData.length)
 
         container.call(d3.zoom().on("zoom", function() {
             x = d3.event.transform.x;
@@ -237,7 +245,7 @@ const GeoExplMap = (props) => {
             </div></Container>
             </Grid.Column>
             <Grid.Column width = {6}>
-            <Container fluid textAlign='right'> <p>{displayedPoints ==! 0? totalPoints : displayedPoints} of {totalPoints} mappable observations displayed. <Icon name='info circle' color='grey'></Icon></p>  
+            <Container fluid textAlign='right'> <p>{displayedPoints} of {totalPoints} mappable observations displayed. <Icon name='info circle' color='grey'></Icon></p>  
             </Container>
             </Grid.Column>
             </Grid.Row>
