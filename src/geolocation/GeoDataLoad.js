@@ -5,71 +5,69 @@ import { Button, Divider, Dimmer, Table, Loader, Message, Container, Form, Selec
 import GeoExplMap from './GeoExplMap';
 import GeoMappableStats from './GeoMappableStats';
 
-
 const unmappableItems = []
 const absentCoordinates = []
 const mappableItems = [] // with just lat and long for delaunay processes
 const fullMappableItems = [] // with all columns 
-
-// variables for tables that will be displayed under the map for missing and unmappable coordinates
-const unmappableItemsTable = []
-const absentCoordinatesTable = []
-
-
+const initDataDelaunay = []
 
 const GeoDataLoad = () => {
 
+    // Map displays points from "reduced" dataset, and tooltips will be displayed for points that are visible
+    // Access to initial/complete dataset is necessary to display neighbour/overlapping points
+
+     // json map uploaded by user
+     const [usermap, setUsermap] = useState(null);
+
+     // dataframe with unique places that will be created in Python from user data (for the moment it is created with a notebook)
+     const [reducedData, setReducedData ] = useState(null);
+
+    // mappable items from reduced dataset
     const [fullData, setFullData] = useState(null);
+
+    // mappable items from reduced dataset with just lat and long for delaunay calculation for finding circle index for tooltip
     const [delaunayData, setDelaunayData ] = useState(null);
-    const [reducedData, setReducedData ] = useState(null);
-    const [usermap, setUsermap] = useState(null);
+
     // initial dataset length
     const [userDataLen, setUserDataLen] = useState(null);
+
+    // initial dataset: mappable items with just lat and long for delaunay calculations for finding multiple/overlapping circles 
+    const [delaunayInitData, setDelaunayInitData] = useState(null);
+    
 
     const projection = d3.geoMercator()
 
 
-  const fetchData = () => {
+    const fetchData = () => {
 
-          
       d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id.csv").then(dataset => {
-
         setUserDataLen(dataset.length); 
-  
+        
         dataset.map((item,index ) => {
-
-  
           if (isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) {
             unmappableItems.push(item)
-            unmappableItemsTable.push(<Table.Row>
-              <Table.Cell>{item['ersatz_id']}</Table.Cell>
-              <Table.Cell>{item['rawPOB']}</Table.Cell>
-              <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
-            </Table.Row>)
           }
         
           else if ( +item.GCcleanPOBlon == 0 || +item.GCcleanPOBlat == 0 || +item.GCcleanPOBlon == '' ||   +item.GCcleanPOBlat == '') {
             absentCoordinates.push(item)
-            absentCoordinatesTable.push(<Table.Row>
-              <Table.Cell>{item['ersatz_id']}</Table.Cell>
-              <Table.Cell>{item['rawPOB']}</Table.Cell>
-              <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
-            </Table.Row>)
           }
   
           else {
-  
+
+            initDataDelaunay.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
+
             // full dataset will be used when finding a point on map with delaunay (unique locations), so that all points with same coords can be retrieved and inserted into dataframe view
             fullMappableItems.push(item);
   
           }
 
         }); }).then(() => {
-          setFullData(fullMappableItems)
+          setFullData(fullMappableItems);
+          setDelaunayInitData(initDataDelaunay);
 
         });
 
-      // following dataset will be created with Python from the first dataset after user upload, in order to group circles that have same coordinates and provide with a "count" column used for single color hue/displaying one point on the map for same location to improve perf
+      // "reduced data" dataset will be created with Python from the first dataset after user upload, in order to group circles that have same coordinates and provide with a "count" column used for single color hue/displaying one point on the map for same location to improve perf
      
       d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => { 
 
@@ -77,15 +75,11 @@ const GeoDataLoad = () => {
           
           return  ((!isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || !isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) || +item.GCcleanPOBlon !== 0 || +item.GCcleanPOBlat !== 0 || +item.GCcleanPOBlon !== ' ' ||   +item.GCcleanPOBlat !== ' ' )
         })
-        
 
         setReducedData(reducedDataMappable);
-
-
           reducedDataMappable.map((item,index) => {    
                 mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
             })
-            
           }).then(() => {
             setDelaunayData(mappableItems);
           }); 
@@ -93,7 +87,6 @@ const GeoDataLoad = () => {
       d3.json(process.env.PUBLIC_URL + "world_1914.json").then(usermap => {
               setUsermap(usermap)
             });
-
 
   }
     
@@ -103,7 +96,7 @@ const GeoDataLoad = () => {
 
     
 
-  return (usermap !== null && delaunayData !== null && fullData !== null && unmappableItems !== null) ? (        
+  return (usermap !== null && delaunayData !== null && fullData !== null && unmappableItems !== null && delaunayInitData !== null) ? (        
     <>
     <Container text>
     <Header size='small'>Upload data and basemap</Header>
@@ -141,7 +134,7 @@ const GeoDataLoad = () => {
     </Container>
     <Divider hidden />
 
-    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItemsTable} absTab = {absentCoordinatesTable} mappable = {fullMappableItems.length}/>
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItems} absTab = {absentCoordinates} mappable = {fullMappableItems.length} initDelaunay = {delaunayInitData}/>
     
     </>       
             

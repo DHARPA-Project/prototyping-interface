@@ -4,14 +4,59 @@ import { Table, Button, Icon, Tab, Message, Divider } from 'semantic-ui-react';
 
 const GeoDataFrame = (props) => {
 
+  const absentCoordinatesTable = [];
+  const unmappableItemsTable = [];
+  const neighborPointsTable = [];
+
+
+  props.unmapTab.map(item => {
+    unmappableItemsTable.push(<Table.Row>
+      <Table.Cell>{item['ersatz_id']}</Table.Cell>
+      <Table.Cell>{item['rawPOB']}</Table.Cell>
+      <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
+    </Table.Row>)
+  })
+
+  props.absTab.map(item => {
+    absentCoordinatesTable.push(<Table.Row>
+      <Table.Cell>{item['ersatz_id']}</Table.Cell>
+      <Table.Cell>{item['rawPOB']}</Table.Cell>
+      <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
+    </Table.Row>)
+  })
+
+  if (props.neighborsTab !== null) {
+    
+    props.neighborsTab.map((item,index) => {
+ 
+      if (index == 0) {
+        neighborPointsTable.push(<Table.Row active>
+          <Table.Cell>{props.fullData[item]['ersatz_id']}</Table.Cell>
+          <Table.Cell>{props.fullData[item]['rawPOB']}</Table.Cell>
+          <Table.Cell>{props.fullData[item]['GCcleanPOBprec']}</Table.Cell>
+        </Table.Row> )
+      }
+      else {
+        neighborPointsTable.push(<Table.Row>
+          <Table.Cell>{props.fullData[item]['ersatz_id']}</Table.Cell>
+          <Table.Cell>{props.fullData[item]['rawPOB']}</Table.Cell>
+          <Table.Cell>{props.fullData[item]['GCcleanPOBprec']}</Table.Cell>
+        </Table.Row> )
+  
+      }
+    })
+
+  }
+
     
     const panes = [
         {
           menuItem: 'Neighbour points exploration',
           render: () => 
           <Tab.Pane attached={false}>
-          <Message>Click on a point to display neighbour points list</Message>
-          {props.tableRes != null && 
+          {neighborPointsTable.length ==0 && <Message>Click on a point to display neighbour points list</Message>}
+          
+          {neighborPointsTable.length >0 && 
           <>
           <Button basic icon labelPosition='left'>
               <Icon name='edit' />
@@ -30,7 +75,7 @@ const GeoDataFrame = (props) => {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-           {props.tableRes}
+           {neighborPointsTable}
           </Table.Body>
           </Table></>}
         </Tab.Pane>,
@@ -55,7 +100,7 @@ const GeoDataFrame = (props) => {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-          {props.unmapTab}
+          {unmappableItemsTable}
           </Table.Body>
         </Table> 
     
@@ -80,7 +125,7 @@ const GeoDataFrame = (props) => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-        {props.absTab}
+        {absentCoordinatesTable}
         </Table.Body>
       </Table>
        </Tab.Pane>,

@@ -25,6 +25,8 @@ const GeoExplMap = (props) => {
     const [displayedPoints, setDisplayedPoints] = useState(0);
     const [tooltipData, setTooltipData] = useState(null);
     const [tooltipDisplay, setTooltipDisplay] = useState('none');
+
+    const [neighborPoints, setNeigborPoints] = useState(null);
     
     let mapClickStatus = 'off';
     
@@ -77,13 +79,9 @@ const GeoExplMap = (props) => {
 
     let quadtreeRes = (data,width,height) => {
         const viewbox = [ [(0 - x) / k, (0 - y) / k],  [(width - x) / k, (height - y) / k]];
-
         const quadtree = setQuadtree(data);
-
         const points = searchQuadtree(quadtree,viewbox[0][0],viewbox[0][1],viewbox[1][0],viewbox[1][1]);
-
         return points
-
     }
 
     let drawCanvas = (context,points,width,height,status,p) => {
@@ -155,6 +153,33 @@ const GeoExplMap = (props) => {
         mapStats(points);
     }
 
+    let findNeighborPoints = (x,y) => {
+
+        const delaunay = Delaunay.from(props.initDelaunay);
+        
+        delaunay.findAll = function(x, y, radius) {
+            const points = delaunay.points,
+                  results = [],
+                  seen = [],
+                  queue = [delaunay.find(x, y)];
+          
+            while (queue.length) {
+              const q = queue.pop();
+              if (seen[q]) continue;
+              seen[q] = true;
+              if (Math.hypot(x - points[2*q], y - points[2*q+1]) < radius) {
+                results.push(q);
+                for (const p of delaunay.neighbors(q)) queue.push(p);
+              }
+            }
+            
+            return results;
+          }
+
+          const items = delaunay.findAll(x,y,25);
+          return items
+    }
+
     let mousePreProcess = (evt,data,delaunay,width,height) => {
         let [rmx, rmy] = [evt.layerX, evt.layerY];
         const point = [rmx,rmy]
@@ -163,7 +188,7 @@ const GeoExplMap = (props) => {
         setTooltipData(p);
         setTooltipDisplay('inline');
         const points = quadtreeRes(data,width,height);
-        return [p,points]
+        return [p,points,new_point]
     }
 
     let handleMouseMove = (evt,width,height,context,delaunay,data) => {
@@ -178,6 +203,8 @@ const GeoExplMap = (props) => {
         if (mapClickStatus === 'off') {
             const res = mousePreProcess(evt,data,delaunay,width,height);
             drawCanvas(context,res[1],width,height,'mouseclick',res[0]);
+            const neighbors = findNeighborPoints(res[2][0],res[2][1])
+            setNeigborPoints(neighbors);
         }
 
         else if (mapClickStatus == 'on') {
@@ -221,7 +248,6 @@ const GeoExplMap = (props) => {
             setXSvg(d3.event.transform.x);
             setYSvg(d3.event.transform.y);
             setKSvg(d3.event.transform.k);
-            // didn't manage to create a callback, this would be better as event wouldn't be needed in zoomed func as it would be already in the state
             zoomed(d3.event.transform,width,height,context,props.data, props.fulldata);
             
          }) );
@@ -246,13 +272,13 @@ const GeoExplMap = (props) => {
         <Grid>
             <Grid.Row>
             <Grid.Column width = {3} style = {{marginLeft: '2%'}} />
-            <Grid.Column width = {6}>
+            <Grid.Column width = {7}>
             <Tooltip />
             <Container ><div style = {{display: tooltipDisplay}}>
                     {TooltipContent}
             </div></Container>
             </Grid.Column>
-            <Grid.Column width = {6}>
+            <Grid.Column width = {5}>
             <Container fluid textAlign='right'> <p>{displayedPoints} of {totalPoints} mappable observations displayed. <Icon name='info circle' color='grey'></Icon></p>  
             </Container>
             </Grid.Column>
@@ -270,7 +296,7 @@ const GeoExplMap = (props) => {
                     </g>
                 </svg>
                 </div>
-                <GeoDataFrame unmapTab = {props.unmapTab} absTab = {props.absTab}/>
+                <GeoDataFrame neighborsTab = {neighborPoints} unmapTab = {props.unmapTab} absTab = {props.absTab} fullData = {props.fullData} />
             </Grid.Column>
             </Grid.Row>
             
