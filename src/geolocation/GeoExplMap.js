@@ -140,10 +140,8 @@ const GeoExplMap = (props) => {
 
 
     let mapStats = (points) => {
-        const totData = props.reducedData.map(item => +item.count).reduce((prev, next) => prev + next);
         const totCircles = points.map((item,index) => +props.reducedData[index].count).reduce((prev, next) => prev + next);
-        
-        setTotalPoints(totData);
+        setTotalPoints(props.mappable);
         setDisplayedPoints(totCircles);
     }
 

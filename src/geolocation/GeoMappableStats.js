@@ -9,8 +9,7 @@ const GeoMappableStats = (props) => (
       <Table.Row>
           <Table.Cell>Mappable</Table.Cell>
           <Table.Cell>
-          
-            {props.stats[2] - props.stats[0] - props.stats[1]}
+            {props.stats[2]}
           </Table.Cell>
         </Table.Row>
         <Table.Row>
@@ -30,7 +29,7 @@ const GeoMappableStats = (props) => (
         <Table.Row>
           <Table.HeaderCell>Total</Table.HeaderCell>
           <Table.HeaderCell>
-            {props.stats[2]}
+            {props.stats[3]}
           </Table.HeaderCell>
         </Table.Row>
         </Table.Footer>

@@ -8,12 +8,13 @@ import GeoMappableStats from './GeoMappableStats';
 
 const unmappableItems = []
 const absentCoordinates = []
-const fullItems = []
-const mappableItems = [] 
+const mappableItems = [] // with just lat and long for delaunay processes
+const fullMappableItems = [] // with all columns 
 
 // variables for tables that will be displayed under the map for missing and unmappable coordinates
 const unmappableItemsTable = []
 const absentCoordinatesTable = []
+
 
 
 const GeoDataLoad = () => {
@@ -22,6 +23,8 @@ const GeoDataLoad = () => {
     const [delaunayData, setDelaunayData ] = useState(null);
     const [reducedData, setReducedData ] = useState(null);
     const [usermap, setUsermap] = useState(null);
+    // initial dataset length
+    const [userDataLen, setUserDataLen] = useState(null);
 
     const projection = d3.geoMercator()
 
@@ -30,8 +33,11 @@ const GeoDataLoad = () => {
 
           
       d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id.csv").then(dataset => {
+
+        setUserDataLen(dataset.length); 
   
         dataset.map((item,index ) => {
+
   
           if (isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) {
             unmappableItems.push(item)
@@ -42,7 +48,7 @@ const GeoDataLoad = () => {
             </Table.Row>)
           }
         
-          if ( +item.GCcleanPOBlon == 0 || +item.GCcleanPOBlon == 0) {
+          else if ( +item.GCcleanPOBlon == 0 || +item.GCcleanPOBlat == 0 || +item.GCcleanPOBlon == '' ||   +item.GCcleanPOBlat == '') {
             absentCoordinates.push(item)
             absentCoordinatesTable.push(<Table.Row>
               <Table.Cell>{item['ersatz_id']}</Table.Cell>
@@ -54,12 +60,12 @@ const GeoDataLoad = () => {
           else {
   
             // full dataset will be used when finding a point on map with delaunay (unique locations), so that all points with same coords can be retrieved and inserted into dataframe view
-            fullItems.push(item);
+            fullMappableItems.push(item);
   
           }
 
         }); }).then(() => {
-          setFullData(fullItems)
+          setFullData(fullMappableItems)
 
         });
 
@@ -67,8 +73,16 @@ const GeoDataLoad = () => {
      
       d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => { 
 
-          setReducedData(reducedData);
-          reducedData.map((item,index) => {    
+        const reducedDataMappable = reducedData.filter((item,index) => {
+          
+          return  ((!isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || !isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) || +item.GCcleanPOBlon !== 0 || +item.GCcleanPOBlat !== 0 || +item.GCcleanPOBlon !== ' ' ||   +item.GCcleanPOBlat !== ' ' )
+        })
+        
+
+        setReducedData(reducedDataMappable);
+
+
+          reducedDataMappable.map((item,index) => {    
                 mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
             })
             
@@ -121,13 +135,13 @@ const GeoDataLoad = () => {
     <Divider></Divider>
     <Header size='small'>Unmappable observations</Header>
         <Message>The table below provides information about points that couldn't be plotted on the map, and points without latitude and longitude.</Message>
-    <GeoMappableStats  stats = {[absentCoordinates.length,unmappableItems.length,fullItems.length]}/>
+    <GeoMappableStats  stats = {[absentCoordinates.length,unmappableItems.length,fullMappableItems.length, userDataLen]}/>
     <Header size='small'>Explore and edit your dataset</Header>
     <Message>Use the map and the table below the map to explore and edit your dataset. You can save the output via the button below.</Message>
     </Container>
     <Divider hidden />
 
-    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItemsTable} absTab = {absentCoordinatesTable}/>
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItemsTable} absTab = {absentCoordinatesTable} mappable = {fullMappableItems.length}/>
     
     </>       
             
