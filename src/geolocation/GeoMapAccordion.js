@@ -8,26 +8,21 @@ const catSettings = (
         <Form.Select fluid placeholder='Select a column' name='color' value='red' />
     </Form>
   )
-
-  const filterSettings = (
-    <Form>
-      <p>Filter data</p>
-      <Form.Group grouped>
-      <Form.Select fluid placeholder='1. Select column' />
-      <Form.Select fluid placeholder='2. Select value' />
-      </Form.Group>
-    </Form>
-  )
   
-  const mouseSettings = (
+  const tooltipSettings = (
     <Form>
-      <p>Hover / Tooltip settings <br/> Select up to 3 fields to display in tooltip. </p>
+      <p>Select up to 3 fields to display in tooltip.</p>
       <Form.Group grouped>
       <Form.Select fluid placeholder='Tooltip field 1' />
       <Form.Select fluid placeholder='Tooltip field 2' />
       <Form.Select fluid placeholder='Tooltip field 3' />
-      </Form.Group>
-      <p>Click / radius settings <br/> Select search radius to display neighbor points </p>
+      </ Form.Group >
+    </Form>
+  )
+
+  const neighborSettings = (
+    <Form>
+      <p>Select search radius to display neighbor points </p>
       <Form.Group grouped>
       <Form.Radio label='Small' name='size' type='radio' value='small' />
       <Form.Radio label='Medium' name='size' type='radio' value='medium' />
@@ -66,31 +61,31 @@ const GeoMapAccordion = () => {
         <Menu.Item>
           <Accordion.Title
             active={activeIndex === 0}
-            content='Mouse events'
+            content='Tooltip'
             index={0}
             onClick={handleClick}
           />
-          <Accordion.Content active={activeIndex === 0} content={mouseSettings} />
+          <Accordion.Content active={activeIndex === 0} content={tooltipSettings} />
         </Menu.Item>
 
         <Menu.Item>
           <Accordion.Title
             active={activeIndex === 1}
-            content='Categorical'
+            content='Neighbor points'
             index={1}
             onClick={handleClick}
           />
-          <Accordion.Content active={activeIndex === 1} content={catSettings} />
+          <Accordion.Content active={activeIndex === 1} content={neighborSettings} />
         </Menu.Item>
 
         <Menu.Item>
           <Accordion.Title
             active={activeIndex === 2}
-            content='Filter'
+            content='Categorical'
             index={2}
             onClick={handleClick}
           />
-          <Accordion.Content active={activeIndex === 2} content={filterSettings} />
+          <Accordion.Content active={activeIndex === 2} content={catSettings} />
         </Menu.Item>
 
         <Menu.Item>
@@ -103,11 +98,7 @@ const GeoMapAccordion = () => {
           <Accordion.Content active={activeIndex === 3} content={overlappingSettings} />
         </Menu.Item>
       </Accordion>
-
-
     )
-
-
 }
 
 export default GeoMapAccordion;

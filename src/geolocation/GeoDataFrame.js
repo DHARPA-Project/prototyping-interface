@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button, Icon, Tab, Message, Divider } from 'semantic-ui-react';
+import { Table, Button, Icon, Tab, Message, Divider, Form } from 'semantic-ui-react';
 
 
 const GeoDataFrame = (props) => {
@@ -81,6 +81,42 @@ const GeoDataFrame = (props) => {
         </Tab.Pane>,
         },
         {
+          menuItem: 'Filter dataframe',
+          render: () => 
+          <Tab.Pane attached={false}>
+          {neighborPointsTable.length ==0 &&
+            <Form>
+            <p>Select column and value to display related points on the map.</p>
+            <Form.Select width={1} placeholder='Select a column' />
+            <Form.Select width={1} placeholder='Select a value' />
+            </Form>
+          }
+          
+          {neighborPointsTable.length >0 && 
+          <>
+          <Button basic icon labelPosition='left'>
+              <Icon name='edit' />
+                  Edit
+              </Button>
+              <Button basic icon labelPosition='left'>
+              <Icon name='save' />
+                  Save Output
+              </Button>
+          <Table striped>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>ersatz_id</Table.HeaderCell>
+              <Table.HeaderCell>rawPOB</Table.HeaderCell>
+              <Table.HeaderCell>GCcleanPOBprec</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+           {neighborPointsTable}
+          </Table.Body>
+          </Table></>}
+        </Tab.Pane>,
+        },
+        {
           menuItem: 'Unmappable',
           render: () => <Tab.Pane attached={false}>
            <Button basic icon labelPosition='left'>
@@ -135,6 +171,7 @@ const GeoDataFrame = (props) => {
 return(
     <>
     <Divider></Divider>
+    <Message>Use the menu options below to view and edit your dataframe.</Message>
     <Tab menu={{ pointing: true }} panes={panes} />
 
     </>
