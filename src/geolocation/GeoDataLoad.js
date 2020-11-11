@@ -146,6 +146,3 @@ const GeoDataLoad = () => {
 }
 
 export default GeoDataLoad;
-
- 
-

@@ -1,25 +1,46 @@
 import React, { useState } from 'react';
-import { Menu, Accordion, Form, Container } from 'semantic-ui-react'
+import { Menu, Accordion, Form, Select} from 'semantic-ui-react'
 
 
-const ColorForm = (
+const catSettings = (
     <Form>
+      <p>Create categories from a column</p>
+        <Form.Select fluid placeholder='Select a column' name='color' value='red' />
+    </Form>
+  )
+
+  const filterSettings = (
+    <Form>
+      <p>Filter data</p>
       <Form.Group grouped>
-        <Form.Checkbox label='Red' name='color' value='red' />
-        <Form.Checkbox label='Orange' name='color' value='orange' />
-        <Form.Checkbox label='Green' name='color' value='green' />
-        <Form.Checkbox label='Blue' name='color' value='blue' />
+      <Form.Select fluid placeholder='1. Select column' />
+      <Form.Select fluid placeholder='2. Select value' />
       </Form.Group>
     </Form>
   )
   
-  const SizeForm = (
+  const mouseSettings = (
+    <Form>
+      <p>Hover / Tooltip settings <br/> Select up to 3 fields to display in tooltip. </p>
+      <Form.Group grouped>
+      <Form.Select fluid placeholder='Tooltip field 1' />
+      <Form.Select fluid placeholder='Tooltip field 2' />
+      <Form.Select fluid placeholder='Tooltip field 3' />
+      </Form.Group>
+      <p>Click / radius settings <br/> Select search radius to display neighbor points </p>
+      <Form.Group grouped>
+      <Form.Radio label='Small' name='size' type='radio' value='small' />
+      <Form.Radio label='Medium' name='size' type='radio' value='medium' />
+      <Form.Radio label='Large' name='size' type='radio' value='large' />
+      </Form.Group>
+    </Form>
+  )
+
+  const overlappingSettings = (
     <Form>
       <Form.Group grouped>
-        <Form.Radio label='Small' name='size' type='radio' value='small' />
-        <Form.Radio label='Medium' name='size' type='radio' value='medium' />
-        <Form.Radio label='Large' name='size' type='radio' value='large' />
-        <Form.Radio label='X-Large' name='size' type='radio' value='x-large' />
+        <Form.Radio label='Darker color to render points density' name='color' type='radio' value='color' />
+        <Form.Radio label='Homogoneous color display' name='color' type='radio' value='single' defaultChecked/>
       </Form.Group>
     </Form>
   )
@@ -37,10 +58,7 @@ const GeoMapAccordion = () => {
 
     return (
 
-  
-        
         <Accordion as={Menu} vertical>
-
         <Menu.Item>
         <p>How do you want to explore the data?</p> 
         </Menu.Item>
@@ -48,31 +66,41 @@ const GeoMapAccordion = () => {
         <Menu.Item>
           <Accordion.Title
             active={activeIndex === 0}
-            content='Tooltip'
+            content='Mouse events'
             index={0}
             onClick={handleClick}
           />
-          <Accordion.Content active={activeIndex === 0} content={SizeForm} />
+          <Accordion.Content active={activeIndex === 0} content={mouseSettings} />
         </Menu.Item>
 
         <Menu.Item>
           <Accordion.Title
             active={activeIndex === 1}
-            content='Neighbours'
+            content='Categorical'
             index={1}
             onClick={handleClick}
           />
-          <Accordion.Content active={activeIndex === 1} content={ColorForm} />
+          <Accordion.Content active={activeIndex === 1} content={catSettings} />
         </Menu.Item>
 
         <Menu.Item>
           <Accordion.Title
             active={activeIndex === 2}
-            content='Categorized'
-            index={1}
+            content='Filter'
+            index={2}
             onClick={handleClick}
           />
-          <Accordion.Content active={activeIndex === 2} content={ColorForm} />
+          <Accordion.Content active={activeIndex === 2} content={filterSettings} />
+        </Menu.Item>
+
+        <Menu.Item>
+          <Accordion.Title
+            active={activeIndex === 3}
+            content='Overlapping points'
+            index={3}
+            onClick={handleClick}
+          />
+          <Accordion.Content active={activeIndex === 3} content={overlappingSettings} />
         </Menu.Item>
       </Accordion>
 
