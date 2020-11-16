@@ -335,9 +335,7 @@ const GeoExplMap = (props) => {
     }
 
     let findNeighborPoints = (x,y) => {
-
         const delaunay = Delaunay.from(props.initDelaunay);
-        
         delaunay.findAll = function(x, y, radius) {
             const points = delaunay.points,
                   results = [],
@@ -353,7 +351,6 @@ const GeoExplMap = (props) => {
                 for (const p of delaunay.neighbors(q)) queue.push(p);
               }
             }
-            
             return results;
           }
 
@@ -365,8 +362,10 @@ const GeoExplMap = (props) => {
         let [rmx, rmy] = [evt.layerX, evt.layerY];
         const point = [rmx,rmy]
         const new_point = [(point[0] - x) / k, (point[1] - y) / k];
+        const delaunay2 = Delaunay.from(props.initDelaunay);
         const p = delaunay.find(new_point[0], new_point[1]);
-        setTooltipData(p);
+        const p2 = delaunay2.find(new_point[0], new_point[1]);
+        setTooltipData(p2);
         setTooltipDisplay('inline');
         const points = quadtreeRes(data,width,height);
         return [p,points,new_point]
