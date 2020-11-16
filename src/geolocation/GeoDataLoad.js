@@ -33,7 +33,9 @@ const GeoDataLoad = () => {
 
     // initial dataset: mappable items with just lat and long for delaunay calculations for finding multiple/overlapping circles 
     const [delaunayInitData, setDelaunayInitData] = useState(null);
-    
+
+
+    const [mapColor, setMapColor] = useState('single');
 
     const projection = d3.geoMercator()
 
@@ -71,15 +73,16 @@ const GeoDataLoad = () => {
      
       d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => { 
 
-        const reducedDataMappable = reducedData.filter((item,index) => {
-          
-          return  ((!isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || !isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) || +item.GCcleanPOBlon !== 0 || +item.GCcleanPOBlat !== 0 || +item.GCcleanPOBlon !== ' ' ||   +item.GCcleanPOBlat !== ' ' )
-        })
+          const reducedDataMappable = reducedData.filter((item,index) => { 
+            return  ((!isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) && !isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]))  && +item.GCcleanPOBlon !== 0  && +item.GCcleanPOBlat !== 0  && +item.GCcleanPOBlon !== ' '  &&   +item.GCcleanPOBlat !== ' ' )
+          })
 
-        setReducedData(reducedDataMappable);
+          setReducedData(reducedDataMappable);
+
           reducedDataMappable.map((item,index) => {    
                 mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
             })
+
           }).then(() => {
             setDelaunayData(mappableItems);
           }); 
@@ -134,7 +137,7 @@ const GeoDataLoad = () => {
     </Container>
     <Divider hidden />
 
-    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItems} absTab = {absentCoordinates} mappable = {fullMappableItems.length} initDelaunay = {delaunayInitData}/>
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItems} absTab = {absentCoordinates} mappable = {fullMappableItems.length} initDelaunay = {delaunayInitData} mapColor = {mapColor}/>
     
     </>       
             

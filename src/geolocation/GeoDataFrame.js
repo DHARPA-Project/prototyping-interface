@@ -171,7 +171,7 @@ const GeoDataFrame = (props) => {
 return(
     <>
     <Divider></Divider>
-    <Message>Use the menu options below to view and edit your dataframe.</Message>
+    <Message>Use the tabs below to view and edit your dataframe.</Message>
     <Tab menu={{ pointing: true }} panes={panes} />
 
     </>

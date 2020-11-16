@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, createFactory } from 'react';
 import * as d3 from 'd3'
 import {Delaunay} from 'd3-delaunay';
 import { Grid, Container, Card, Icon} from 'semantic-ui-react';
@@ -17,23 +17,182 @@ const GeoExplMap = (props) => {
     let y = 0;
     let k = 1;
     // zoom params also stored in state for svg 
-    const [xSvg, setXSvg] = useState(0);
-    const [ySvg, setYSvg] = useState(0);
-    const [kSvg, setKSvg] = useState(1);
+    let [xSvg, setXSvg] = useState(0);
+    let [ySvg, setYSvg] = useState(0);
+    let [kSvg, setKSvg] = useState(1);
     
     const [totalPoints, setTotalPoints] = useState(0);
     const [displayedPoints, setDisplayedPoints] = useState(0);
     const [tooltipData, setTooltipData] = useState(null);
     const [tooltipDisplay, setTooltipDisplay] = useState('none');
 
+    const [delaunayData, setDelaunayData] = useState(props.data)
+
     const [neighborPoints, setNeigborPoints] = useState(null);
+
+
+
+    // menu functions //
+    // map left menu (dataframe)
+    const [mapColor, setMapColor] = useState('single');
+
+    let handleChangeColor = (e, { value }) => {
+        setMapColor(value[0]);
+        value[0] == 'color' ? createColorHue(value[1]) : resetMap(value[1])
+      };
+  
+      let createColorHue = (evt) => {
+  
+        const colors = ['rgb(47, 126, 188)', 'rgb(24, 100, 170)','rgb(8, 61, 126)' ,'rgb(8,48,107)']
+  
+        const interpolate = d3.interpolateRgbBasis(colors);
+  
+        const colorScale = d3.scaleLinear()
+            .domain([d3.min(props.reducedData, d => +d.count), d3.max(props.reducedData, d => +d.count)])
+            .range([0, 3]);
+
+       /* const toRgba = (color) => {
+            const matches = color.match(/\d+/g);
+            return `rgba(${matches[0]},${matches[1]},${matches[2]},.8)`
+        } */
+  
+        const data = props.data.map((element,index) => (
+            { 0:element[0], 1:element[1], color: interpolate(colorScale(+props.reducedData[index].count)), count: +props.reducedData[index].count
+          }));
+
+  
+        // width and height are not right when taken from refs this is why I'm using JS DOM selection
+        const width = document.getElementById('svgContainer').clientWidth;
+        const height = document.getElementById('svgContainer').clientHeight; 
+
+        const canvas = d3.select('canvas');
+
+        const container = d3.select("#canvasContainer");
+        const context = canvas.node().getContext("2d");
+
+        initParams(width,height,context,container,data,props.fulldata,0)
+        attachEvents(evt,width,height,context,container,data,props.fulldata);
+        zoomed(evt,width,height,context,data,0)
+  
+      }
+
+      let resetMap = (evt) => {
+
+        const width = document.getElementById('svgContainer').clientWidth;
+        const height = document.getElementById('svgContainer').clientHeight; 
+
+        const canvas = d3.select('canvas');
+
+        const container = d3.select("#canvasContainer");
+        const context = canvas.node().getContext("2d");
+
+        initParams(width,height,context,container,props.data,props.fulldata,0)
+        attachEvents(evt,width,height,context,container,props.data,props.fulldata);
+        zoomed(evt,width,height,context,props.data,0)
+
+      }
+
+      const [catList, setCatlist] = useState([]);
+      let createCat = () => {}
+      let createCols = () => {}
+      /*
+
+      work in progress
+
+      let createCat = () => {
+        
+        const colors_cat = ['#d7191c', '#fdae61', '#ffffbf', '#abdda4', '#2b83ba'];
+        const cats = ['blank', 'county', 'plus', 'state', 'town'];
+        const catListItems = []
+
+        cats.map((item,index) => {        
+            const res =  props.fullData.filter((item) => {
+                return item['GCcleanPOBprec'] == cats[index]
+            })
+            catListItems.push([cats[index],res.length,colors_cat[index]])
+        })
+
+        setCatlist(catListItems)
+
+        const findColor = (item) => {
+           let color = 'rgba(0,0,0,0)';
+            switch (item) {
+                case "blank":
+                  color = d3.schemeSet3[0];
+                  break;
+                case "county":
+                  color = d3.schemeSet3[1];
+                  break;
+                case "plus":
+                color = d3.schemeSet3[2];
+                  break;
+                case "state":
+                  color = d3.schemeSet3[3];
+                  break;
+                case "town":
+                  color = d3.schemeSet3[4];
+                  break;
+            }
+
+            return color;
+        }
+
+       
+  
+  
+        const data = props.data.map((element,index) => (
+            { 0:element[0], 1:element[1], color: findColor(props.reducedData[index]['GCcleanPOBprec'])
+          }));
+
+  
+        // width and height are not right when taken from refs
+        const width = document.getElementById('svgContainer').clientWidth;
+        const height = document.getElementById('svgContainer').clientHeight; 
+
+        const canvas = d3.select('canvas');
+
+        const container = d3.select("#canvasContainer");
+        const context = canvas.node().getContext("2d");
+
+        const evt = {}; evt.k = kSvg; evt.x = xSvg; evt.y = ySvg;
+
+        initParams(width,height,context,container,data,props.fulldata,evt,'cat');
+
+      }
+
+      let createCols = (event,data) => {
+       
+       data.value == '' ? resetMap():createCat();
+       
+        /* this.setState({clickCircle:null})
+       if (data.value == '') {
+        this.setState({dataset_user: null, dataset_status: null, legend_display: 'none'})
+        
+        this.zoomed(0,this.state.width,this.state.height,this.state.context,'false');
+        
+       }
+       else {
+        d3.csv(process.env.PUBLIC_URL + "user_df_groupby.csv").then(dataset => {
+          this.setState({dataset_user: dataset, dataset_status: data.value})
+          this.handleCategories(this.state.width,this.state.height,this.state.context);
+        });
+       } 
+        
+      }
+    */
+    
+
+    // end of map menu functions
+
+   
+
     
     let mapClickStatus = 'off';
     
 
-    const r = 2.5;
-    const mainColor1 = 'rgba(70, 130, 180, .5)' // map circles fill
-    const mainColor2 = 'rgba(70, 130, 180, .9)' // map circles stroke
+    const r = 3;
+    const mainColor1 = 'rgba(70, 130, 180, .8)' // map circles fill
+    const mainColor2 = 'rgba(70, 130, 180, 1)' // map circles stroke
     const mainColor3 = 'rgb(0,0,0)' // circle that appears when clicking on map
 
     // settings and paths for the basemap
@@ -84,18 +243,33 @@ const GeoExplMap = (props) => {
         return points
     }
 
-    let drawCanvas = (context,points,width,height,status,p) => {
 
+    let drawCanvas = (zoomevt,context,points,width,height,status,p) => {
+
+ 
         if (mapClickStatus === 'off') {
-        context.save();
+       context.save();
         context.clearRect(0, 0, width, height);
-        context.translate(x, y);
-        context.scale(k, k);
-        context.globalAlpha = .7;
-        context.lineWidth = .7;
+        context.beginPath();
+        context.translate(zoomevt.x, zoomevt.y);
+        context.scale(zoomevt.k, zoomevt.k);
+        context.globalAlpha = .5;
+        context.lineWidth = .7; 
+        
+        let points_sorted;
 
-        points.forEach(item => {
-            context.fillStyle = mainColor1;
+        if (status == 'cat') {
+            points_sorted = points.slice().sort((a, b) => d3.ascending(+b.count,+a.count));
+
+        }
+        else {
+            points_sorted = points.slice().sort((a, b) => d3.ascending(+a.count,+b.count));
+        }
+
+        
+
+        points_sorted.forEach(item => {
+            context.fillStyle = item['color'] || mainColor1;
             context.strokeStyle = mainColor2;   
             context.beginPath();
             context.moveTo(item[0] + r, item[1]);
@@ -146,10 +320,10 @@ const GeoExplMap = (props) => {
 
     //zoom is called everytime the map is displayed (with a value of 0 by default), and initiates canvas circles drawing 
 
-    let zoomed = (evt,width,height,context,data,fulldata) => {
-        if (evt == 0) {evt = {}; evt.k = 1; evt.x = 0; evt.y = 0;} 
+    let zoomed = (zoomevt,width,height,context,data,status) => {
+        if (zoomevt == 0) {zoomevt = {}; zoomevt.k = 1; zoomevt.x = 0; zoomevt.y = 0;} 
         const points = quadtreeRes(data,width,height)
-        drawCanvas(context,points,width,height);
+        drawCanvas(zoomevt,context,points,width,height,status);
         mapStats(points);
     }
 
@@ -191,41 +365,64 @@ const GeoExplMap = (props) => {
         return [p,points,new_point]
     }
 
-    let handleMouseMove = (evt,width,height,context,delaunay,data) => {
+    let handleMouseMove = (zoomevt,mouseevt,width,height,context,delaunay,data,container) => {
         if (mapClickStatus === 'off') {
-        const res = mousePreProcess(evt,data,delaunay,width,height);
-        drawCanvas(context,res[1],width,height,'mousemove',res[0]);
+        const res = mousePreProcess(mouseevt,data,delaunay,width,height);
+        drawCanvas(zoomevt,context,res[1],width,height,'mousemove',res[0]);
         }
     }
 
-    let handleMouseClick = (evt,width,height,context,delaunay,data) => {
+    let handleMouseClick = (zoomevt,mouseevt,width,height,context,delaunay,data) => {
 
         if (mapClickStatus === 'off') {
-            const res = mousePreProcess(evt,data,delaunay,width,height);
-            drawCanvas(context,res[1],width,height,'mouseclick',res[0]);
+            const res = mousePreProcess(mouseevt,data,delaunay,width,height);
+            drawCanvas(zoomevt,context,res[1],width,height,'mouseclick',res[0]);
             const neighbors = findNeighborPoints(res[2][0],res[2][1])
             setNeigborPoints(neighbors);
         }
 
         else if (mapClickStatus == 'on') {
             mapClickStatus = 'off';
-            const res = mousePreProcess(evt,data,delaunay,width,height);
-            drawCanvas(context,res[1],width,height,'mousemove',res[0]);
+            const res = mousePreProcess(mouseevt,data,delaunay,width,height);
+            drawCanvas(zoomevt,context,res[1],width,height,'mousemove',res[0]);
+           
         }
         
     }
 
 
-    let attachEvents = (width,height,context,container,data,fulldata) => {
+    let attachEvents = (zoomevt,width,height,context,container,data) => {
+        
         const delaunay = Delaunay.from(data);
 
         container.on("mousemove", evt => {
-            handleMouseMove(d3.event,width,height,context,delaunay,data)
+            if (mapClickStatus == 'off') {
+                handleMouseMove(zoomevt,d3.event,width,height,context,delaunay,data,container)
+            }
+            
           });
 
         container.on("click", evt => {
-            handleMouseClick(d3.event,width,height,context,delaunay,data)
+            handleMouseClick(zoomevt,d3.event,width,height,context,delaunay,data)
         });
+    }
+
+    let initParams = (width,height,context,container,data,fulldata,status) => {
+        
+        container.call(d3.zoom().on("zoom", function() {
+            if (mapClickStatus == 'off') {
+            x = d3.event.transform.x;
+            y = d3.event.transform.y;
+            k = d3.event.transform.k;
+            setXSvg(d3.event.transform.x);
+            setYSvg(d3.event.transform.y);
+            setKSvg(d3.event.transform.k);
+            attachEvents(d3.event.transform,width,height,context,container,data,fulldata);
+            zoomed(d3.event.transform,width,height,context,data,status);
+            }
+            
+         }) );
+        
     }
 
 
@@ -240,22 +437,10 @@ const GeoExplMap = (props) => {
        const container = d3.select("#canvasContainer");
        const context = canvas.node().getContext("2d");
 
-
-        container.call(d3.zoom().on("zoom", function() {
-            x = d3.event.transform.x;
-            y = d3.event.transform.y;
-            k = d3.event.transform.k;
-            setXSvg(d3.event.transform.x);
-            setYSvg(d3.event.transform.y);
-            setKSvg(d3.event.transform.k);
-            zoomed(d3.event.transform,width,height,context,props.data, props.fulldata);
-            
-         }) );
-
-         
-        attachEvents(width,height,context,container,props.data, props.fulldata);
-        zoomed(0,width,height,context,props.data, props.fulldata);
-        
+       initParams(width,height,context,container,props.data,props.fulldata,0);
+       attachEvents(0,width,height,context,container,props.data,props.fulldata);
+       zoomed(0,width,height,context,props.data,0);
+       
 
     }, []);
 
@@ -285,7 +470,7 @@ const GeoExplMap = (props) => {
             </Grid.Row>
             <Grid.Row>
             <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
-            <GeoMapAccordion />
+            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} />
             </Grid.Column>
             <Grid.Column width = {12}>
                 <div style={{position: 'relative'}}>
