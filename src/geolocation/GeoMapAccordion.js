@@ -22,7 +22,7 @@ const GeoMapAccordion = (props) => {
       const catSettings = (
         <Form>
           <p>Create categories from a column</p>
-          <Dropdown clearable fluid placeholder='Select a column' search selection options={colOptions} onChange={props.colOptions}/>
+          <Dropdown clearable fluid placeholder='Select a column' search selection zoomevt = {props.zoomLevel} options={colOptions} onChange={props.colOptions}/>
           
         </Form>
       )
@@ -66,11 +66,10 @@ const GeoMapAccordion = (props) => {
           </Form.Group>
           </Form>
 
-            { 
+            { /*
             
             props.catList.length > 0 && 
-            
-            
+          
           <Form>
 
            
@@ -83,7 +82,7 @@ const GeoMapAccordion = (props) => {
                 onChange={this.handleChange}
               />
             </Form.Field>
-            </Form>
+            </Form> */
             }
           </>  
       )

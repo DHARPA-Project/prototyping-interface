@@ -34,6 +34,8 @@ const GeoExplMap = (props) => {
 
     // menu functions //
     // map left menu (dataframe)
+
+    // single color hue display ('overlapping points' in the map menu)
     const [mapColor, setMapColor] = useState('single');
 
     let handleChangeColor = (e, { value }) => {
@@ -92,18 +94,15 @@ const GeoExplMap = (props) => {
 
       }
 
+      // categorical display
+
       const [catList, setCatlist] = useState([]);
-      let createCat = () => {}
-      let createCols = () => {}
-      /*
+      
+      let createCat = (zoomevt) => {
 
-      work in progress
-
-      let createCat = () => {
-        
         const colors_cat = ['#d7191c', '#fdae61', '#ffffbf', '#abdda4', '#2b83ba'];
         const cats = ['blank', 'county', 'plus', 'state', 'town'];
-        const catListItems = []
+        const catListItems = [];
 
         cats.map((item,index) => {        
             const res =  props.fullData.filter((item) => {
@@ -115,37 +114,32 @@ const GeoExplMap = (props) => {
         setCatlist(catListItems)
 
         const findColor = (item) => {
-           let color = 'rgba(0,0,0,0)';
-            switch (item) {
-                case "blank":
-                  color = d3.schemeSet3[0];
-                  break;
-                case "county":
-                  color = d3.schemeSet3[1];
-                  break;
-                case "plus":
-                color = d3.schemeSet3[2];
-                  break;
-                case "state":
-                  color = d3.schemeSet3[3];
-                  break;
-                case "town":
-                  color = d3.schemeSet3[4];
-                  break;
-            }
+            let color = 'rgba(0,0,0,0)';
+             switch (item) {
+                 case "blank":
+                   color = d3.schemeSet3[0];
+                   break;
+                 case "county":
+                   color = d3.schemeSet3[1];
+                   break;
+                 case "plus":
+                 color = d3.schemeSet3[2];
+                   break;
+                 case "state":
+                   color = d3.schemeSet3[3];
+                   break;
+                 case "town":
+                   color = d3.schemeSet3[4];
+                   break;
+             }
+ 
+             return color;
+         }
 
-            return color;
-        }
-
-       
-  
-  
-        const data = props.data.map((element,index) => (
+         const data = props.data.map((element,index) => (
             { 0:element[0], 1:element[1], color: findColor(props.reducedData[index]['GCcleanPOBprec'])
           }));
 
-  
-        // width and height are not right when taken from refs
         const width = document.getElementById('svgContainer').clientWidth;
         const height = document.getElementById('svgContainer').clientHeight; 
 
@@ -154,15 +148,28 @@ const GeoExplMap = (props) => {
         const container = d3.select("#canvasContainer");
         const context = canvas.node().getContext("2d");
 
-        const evt = {}; evt.k = kSvg; evt.x = xSvg; evt.y = ySvg;
-
-        initParams(width,height,context,container,data,props.fulldata,evt,'cat');
+        initParams(width,height,context,container,data,props.fulldata,0)
+        attachEvents(zoomevt,width,height,context,container,data,props.fulldata);
+        zoomed(zoomevt,width,height,context,data,0)
 
       }
 
       let createCols = (event,data) => {
+        
+        data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt);
+        
+
+      }
+      /*
+        let handleChangeColor = (e, { value }) => {
+        setMapColor(value[0]);
+        value[0] == 'color' ? createColorHue(value[1]) : resetMap(value[1])
+      };
+
+
+      let createCols = (event,data) => {
        
-       data.value == '' ? resetMap():createCat();
+       
        
         /* this.setState({clickCircle:null})
        if (data.value == '') {
