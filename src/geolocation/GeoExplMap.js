@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, createFactory } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3'
 import {Delaunay} from 'd3-delaunay';
 import { Grid, Container, Card, Icon} from 'semantic-ui-react';
@@ -79,6 +79,7 @@ const GeoExplMap = (props) => {
       }
 
       let resetMap = (evt) => {
+        setCatlist([]);
 
         const width = document.getElementById('svgContainer').clientWidth;
         const height = document.getElementById('svgContainer').clientHeight; 
@@ -158,7 +159,6 @@ const GeoExplMap = (props) => {
         
         data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt);
         
-
       }
       /*
         let handleChangeColor = (e, { value }) => {
@@ -188,11 +188,7 @@ const GeoExplMap = (props) => {
       }
     */
     
-
     // end of map menu functions
-
-   
-
     
     let mapClickStatus = 'off';
     

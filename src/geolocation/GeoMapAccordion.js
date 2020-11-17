@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, Accordion, Form, Dropdown, Radio} from 'semantic-ui-react'
+import GeoMapCategories from './GeoMapCategories';
 
 
 const GeoMapAccordion = (props) => {
@@ -20,11 +21,13 @@ const GeoMapAccordion = (props) => {
       ]
 
       const catSettings = (
+        <>
         <Form>
           <p>Create categories from a column</p>
           <Dropdown clearable fluid placeholder='Select a column' search selection zoomevt = {props.zoomLevel} options={colOptions} onChange={props.colOptions}/>
-          
         </Form>
+        <GeoMapCategories catList = {props.catList} />
+        </>
       )
       
       const tooltipSettings = (
@@ -65,25 +68,6 @@ const GeoMapAccordion = (props) => {
             <Form.Radio label='Homogoneous color display' name='color' type='radio' value={['single',props.zoomLevel]}  checked = {props.colorStatus === 'single'} onChange = {props.colorChange}/>
           </Form.Group>
           </Form>
-
-            { /*
-            
-            props.catList.length > 0 && 
-          
-          <Form>
-
-           
-            <Form.Field>
-              <Radio
-                label='Or that'
-                name='radioGroup'
-                value='that'
-                checked={this.state.value === 'that'}
-                onChange={this.handleChange}
-              />
-            </Form.Field>
-            </Form> */
-            }
           </>  
       )
 
