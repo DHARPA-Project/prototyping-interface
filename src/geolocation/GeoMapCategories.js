@@ -3,9 +3,12 @@ import { Form, Radio, Divider, Table, Button } from 'semantic-ui-react'
 
 const GeoMapCategories = (props) => {
     
-    const [activeItem, setActiveItem] = useState(null)
+    const [activeItem, setActiveItem] = useState('all')
 
-    const  handleChange = (e, { value }) => setActiveItem(value)
+    const  handleChange = (e, { value }) => {
+      setActiveItem(value);
+      props.displayCategory(props.zoomLevel,value);
+    }
 
     const listItems = props.catList.map((item,index) => {
         return(
@@ -30,13 +33,12 @@ const GeoMapCategories = (props) => {
         <Form>
         <Table basic='very' collapsed  compact>
         <Table.Body>
-
         {listItems}
-
         <Table.Row>
-        <Table.Cell> <Radio defaultChecked
+        <Table.Cell> <Radio 
           name='all'
           value='all'
+          checked={activeItem === 'all'}
           onChange={handleChange}
         /></Table.Cell>
         <Table.Cell>Show all</Table.Cell>

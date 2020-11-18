@@ -26,7 +26,7 @@ const GeoMapAccordion = (props) => {
           <p>Create categories from a column</p>
           <Dropdown clearable fluid placeholder='Select a column' search selection zoomevt = {props.zoomLevel} options={colOptions} onChange={props.colOptions}/>
         </Form>
-        <GeoMapCategories catList = {props.catList} />
+        <GeoMapCategories catList = {props.catList} displayCategory = {props.displayCategory} zoomLevel = {props.zoomLevel} />
         </>
       )
       
@@ -51,12 +51,6 @@ const GeoMapAccordion = (props) => {
           </Form.Group>
         </Form>
       )
-
-     /* const formItems = () {
-        props.catList.map(item => {
-
-        })
-      } */
 
     
       const overlappingSettings = (

@@ -29,11 +29,12 @@ const GeoExplMap = (props) => {
     const [delaunayData, setDelaunayData] = useState(props.data)
 
     const [neighborPoints, setNeigborPoints] = useState(null);
-
+    
+    const colors_cat = [d3.schemeSet3[1],d3.schemeSet3[2],d3.schemeSet3[3],d3.schemeSet3[4] ]
 
 
     // menu functions //
-    // map left menu (dataframe)
+    // map left menu
 
     // single color hue display ('overlapping points' in the map menu)
     const [mapColor, setMapColor] = useState('single');
@@ -52,18 +53,11 @@ const GeoExplMap = (props) => {
         const colorScale = d3.scaleLinear()
             .domain([d3.min(props.reducedData, d => +d.count), d3.max(props.reducedData, d => +d.count)])
             .range([0, 3]);
-
-       /* const toRgba = (color) => {
-            const matches = color.match(/\d+/g);
-            return `rgba(${matches[0]},${matches[1]},${matches[2]},.8)`
-        } */
   
         const data = props.data.map((element,index) => (
             { 0:element[0], 1:element[1], color: interpolate(colorScale(+props.reducedData[index].count)), count: +props.reducedData[index].count
           }));
 
-  
-        // width and height are not right when taken from refs this is why I'm using JS DOM selection
         const width = document.getElementById('svgContainer').clientWidth;
         const height = document.getElementById('svgContainer').clientHeight; 
 
@@ -98,11 +92,83 @@ const GeoExplMap = (props) => {
       // categorical display
 
       const [catList, setCatlist] = useState([]);
+
+      const findColor = (item) => {
+        let color = 'rgba(0,0,0,0)';
+         switch (item) {
+             case "county":
+               color = colors_cat[0]
+               break;
+             case "plus":
+                color = colors_cat[1]
+               break;
+             case "state":
+                color = colors_cat[2]
+               break;
+             case "town":
+                 color = colors_cat[3]
+               break;
+         }
+
+         return color;
+     }
+
+     const catData = (value,data,catListItems) => {
+        
+        let newdata = []
+        let newitemsdata = []
+
+        switch(value) {
+            case 'noval':
+                newdata = data.map((element,index) => (
+                    { 0:element[0], 1:element[1], color: findColor(props.reducedData[index]['GCcleanPOBprec'])
+                  }));
+                break;
+            
+            case 'all':
+                newdata = data.map((element,index) => (
+                    { 0:element[0], 1:element[1], color: findColor(props.reducedData[index]['GCcleanPOBprec'])
+                    }));
+                break;
+
+            default:
+                data.map((element,index) => {
+                    if (props.reducedData[index]['GCcleanPOBprec'] == value) {
+                        
+                        newdata.push({ 0:element[0], 1:element[1], color: findColor(props.reducedData[index]['GCcleanPOBprec'])})
+
+                        newitemsdata.push(props.reducedData[index])
+                    
+                    }
+                });
+                break;
+        
+        }
+        return [newdata,newitemsdata]
+
+     }
+
+     let displayCategory =  (zoomevt,value,catListItems) => {
+        
+        let newdata = value === undefined ? catData('noval',props.data,catListItems) : catData(value,props.data,catListItems);
+
+        const width = document.getElementById('svgContainer').clientWidth;
+        const height = document.getElementById('svgContainer').clientHeight; 
+
+        const canvas = d3.select('canvas');
+
+        const container = d3.select("#canvasContainer");
+        const context = canvas.node().getContext("2d");
+
+        initParams(width,height,context,container,newdata[0],newdata[1],0)
+        attachEvents(zoomevt,width,height,context,container,newdata[0],newdata[1]);
+        zoomed(zoomevt,width,height,context,newdata[0],0)
+      }
       
       let createCat = (zoomevt) => {
 
-        const colors_cat = ['#d7191c', '#fdae61', '#ffffbf', '#abdda4', '#2b83ba'];
-        const cats = ['blank', 'county', 'plus', 'state', 'town'];
+        const cats = ['county', 'plus', 'state', 'town'];
+        
         const catListItems = [];
 
         cats.map((item,index) => {        
@@ -113,85 +179,17 @@ const GeoExplMap = (props) => {
         })
 
         setCatlist(catListItems)
-
-        const findColor = (item) => {
-            let color = 'rgba(0,0,0,0)';
-             switch (item) {
-                 case "blank":
-                   color = d3.schemeSet3[0];
-                   break;
-                 case "county":
-                   color = d3.schemeSet3[1];
-                   break;
-                 case "plus":
-                 color = d3.schemeSet3[2];
-                   break;
-                 case "state":
-                   color = d3.schemeSet3[3];
-                   break;
-                 case "town":
-                   color = d3.schemeSet3[4];
-                   break;
-             }
- 
-             return color;
-         }
-
-         const data = props.data.map((element,index) => (
-            { 0:element[0], 1:element[1], color: findColor(props.reducedData[index]['GCcleanPOBprec'])
-          }));
-
-        const width = document.getElementById('svgContainer').clientWidth;
-        const height = document.getElementById('svgContainer').clientHeight; 
-
-        const canvas = d3.select('canvas');
-
-        const container = d3.select("#canvasContainer");
-        const context = canvas.node().getContext("2d");
-
-        initParams(width,height,context,container,data,props.fulldata,0)
-        attachEvents(zoomevt,width,height,context,container,data,props.fulldata);
-        zoomed(zoomevt,width,height,context,data,0)
-
+        displayCategory(zoomevt,'noval',catListItems)
       }
 
       let createCols = (event,data) => {
-        
         data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt);
         
       }
-      /*
-        let handleChangeColor = (e, { value }) => {
-        setMapColor(value[0]);
-        value[0] == 'color' ? createColorHue(value[1]) : resetMap(value[1])
-      };
-
-
-      let createCols = (event,data) => {
-       
-       
-       
-        /* this.setState({clickCircle:null})
-       if (data.value == '') {
-        this.setState({dataset_user: null, dataset_status: null, legend_display: 'none'})
-        
-        this.zoomed(0,this.state.width,this.state.height,this.state.context,'false');
-        
-       }
-       else {
-        d3.csv(process.env.PUBLIC_URL + "user_df_groupby.csv").then(dataset => {
-          this.setState({dataset_user: dataset, dataset_status: data.value})
-          this.handleCategories(this.state.width,this.state.height,this.state.context);
-        });
-       } 
-        
-      }
-    */
     
     // end of map menu functions
     
     let mapClickStatus = 'off';
-    
 
     const r = 3;
     const mainColor1 = 'rgba(70, 130, 180, .8)' // map circles fill
@@ -267,9 +265,7 @@ const GeoExplMap = (props) => {
         }
         else {
             points_sorted = points.slice().sort((a, b) => d3.ascending(+a.count,+b.count));
-        }
-
-        
+        }  
 
         points_sorted.forEach(item => {
             context.fillStyle = item['color'] || mainColor1;
@@ -472,7 +468,7 @@ const GeoExplMap = (props) => {
             </Grid.Row>
             <Grid.Row>
             <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
-            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} />
+            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} />
             </Grid.Column>
             <Grid.Column width = {12}>
                 <div style={{position: 'relative'}}>
