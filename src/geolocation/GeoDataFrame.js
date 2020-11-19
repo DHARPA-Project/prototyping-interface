@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button, Icon, Tab, Message, Divider, Form } from 'semantic-ui-react';
+import { Table, Divider, Segment, Button, Container, Grid } from 'semantic-ui-react';
 
 
 const GeoDataFrame = (props) => {
@@ -9,7 +9,7 @@ const GeoDataFrame = (props) => {
   const neighborPointsTable = [];
 
 
-  props.unmapTab.map(item => {
+ /* props.unmapTab.map(item => {
     unmappableItemsTable.push(<Table.Row>
       <Table.Cell>{item['ersatz_id']}</Table.Cell>
       <Table.Cell>{item['rawPOB']}</Table.Cell>
@@ -23,7 +23,7 @@ const GeoDataFrame = (props) => {
       <Table.Cell>{item['rawPOB']}</Table.Cell>
       <Table.Cell>{item['GCcleanPOBprec']}</Table.Cell>
     </Table.Row>)
-  })
+  }) */
 
   if (props.neighborsTab !== null) {
     
@@ -49,7 +49,7 @@ const GeoDataFrame = (props) => {
   }
 
     
-    const panes = [
+   /* const panes = [
         {
           menuItem: 'Neighbour points exploration',
           render: () => 
@@ -166,18 +166,49 @@ const GeoDataFrame = (props) => {
       </Table>
        </Tab.Pane>,
         },
-      ]
+      ] */
 
-return(
+return props.neighborsTab !== null ? (
     <>
-    <Divider></Divider>
-    <Message>Use the tabs below to view and edit your dataframe.</Message>
-    <Tab menu={{ pointing: true }} panes={panes} />
-
+        <Divider />
+            <Grid.Row>
+            <Grid.Column width = {3} style = {{marginLeft: '2%'}} >
+              <Button.Group basic size = 'small' >
+                <Button icon = 'edit' />
+                <Button icon ='save' />
+                <Button icon ='download' />
+            </Button.Group>
+            </Grid.Column>
+            <Grid.Column width = {12}>
+              <Table striped>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>ersatz_id</Table.HeaderCell>
+                    <Table.HeaderCell>rawPOB</Table.HeaderCell>
+                    <Table.HeaderCell>GCcleanPOBprec</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                {neighborPointsTable}
+                </Table.Body>
+            </Table>
+            </Grid.Column>
+            </Grid.Row>
+   
     </>
-)
+):(
+        <Grid.Row>
+        <Grid.Column width = {3} style = {{marginLeft: '2%'}}></Grid.Column>
+        <Grid.Column width = {12} >
+        <Segment>Click on a point or use filtering options to display rows of your dataframe.</Segment>   
+        </Grid.Column>
+        </Grid.Row>
+ )
 
 
 }
 
 export default GeoDataFrame;
+
+// <Message>Use the tabs below to view and edit your dataframe.</Message>
+// <Tab menu={{ pointing: true }} panes={panes} />

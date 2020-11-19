@@ -1,9 +1,9 @@
 import React from 'react';
-import { Table } from 'semantic-ui-react'
+import { Table, Divider } from 'semantic-ui-react'
 
 
 const GeoMappableStats = (props) => (
- 
+    <>
     <Table collapsing>
       <Table.Body>
       <Table.Row>
@@ -34,6 +34,8 @@ const GeoMappableStats = (props) => (
         </Table.Row>
         </Table.Footer>
     </Table>
+    <Divider />
+    </>
     
   )
 

@@ -33,8 +33,6 @@ const GeoDataLoad = () => {
 
     // initial dataset: mappable items with just lat and long for delaunay calculations for finding multiple/overlapping circles 
     const [delaunayInitData, setDelaunayInitData] = useState(null);
-
-
     const [mapColor, setMapColor] = useState('single');
 
     const projection = d3.geoMercator()
@@ -102,7 +100,7 @@ const GeoDataLoad = () => {
   return (usermap !== null && delaunayData !== null && fullData !== null && unmappableItems !== null && delaunayInitData !== null) ? (        
     <>
     <Container text>
-    <Header size='small'>Upload data and basemap</Header>
+    <Header size='small'>1. Upload data and basemap</Header>
     <Button icon='upload' content = 'Upload dataset (csv)' />
     <Button.Group>
     <Button>Load default basemap</Button>
@@ -110,7 +108,7 @@ const GeoDataLoad = () => {
     <Button>Upload your own</Button>
     </Button.Group>
     <Divider></Divider>
-    <Header size='small'>Select latitude and longitude</Header>
+    <Header size='small'>2. Select latitude and longitude</Header>
     <Message>To enable map display, indicate which columns of your dataset describe latitude and longitude.</Message>
     <Form size='mini'>
         <Form.Group widths='equal'>
@@ -129,15 +127,13 @@ const GeoDataLoad = () => {
     </Form>
 
     <Divider></Divider>
-    <Header size='small'>Unmappable observations</Header>
-        <Message>The table below provides information about points that couldn't be plotted on the map, and points without latitude and longitude.</Message>
     <GeoMappableStats  stats = {[absentCoordinates.length,unmappableItems.length,fullMappableItems.length, userDataLen]}/>
-    <Header size='small'>Explore and edit your dataset</Header>
-    <Message>Use the map and the table below the map to explore and edit your dataset. You can save the output via the button below.</Message>
+    
+    <Header size='small'>3. Explore your dataset</Header>
     </Container>
     <Divider hidden />
 
-    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItems} absTab = {absentCoordinates} mappable = {fullMappableItems.length} initDelaunay = {delaunayInitData} mapColor = {mapColor}/>
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItems} absTab = {absentCoordinates} mappableAll = {fullMappableItems} mappable = {fullMappableItems.length} initDelaunay = {delaunayInitData} mapColor = {mapColor}/>
     
     </>       
             
@@ -149,3 +145,8 @@ const GeoDataLoad = () => {
 }
 
 export default GeoDataLoad;
+
+/*
+ <Header size='small'>Unmappable observations</Header>
+        <Message>The table below provides information about points that couldn't be plotted on the map, and points without latitude and longitude.</Message>
+        */
