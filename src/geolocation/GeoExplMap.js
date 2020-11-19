@@ -284,7 +284,7 @@ const GeoExplMap = (props) => {
         
         let points_sorted;
 
-        if (status2 == 'cat' || status2 == 'grouped') {
+        if (status2 == 'cat') {
             points_sorted = points.slice().sort((a, b) => d3.ascending(+b.count,+a.count));
         }
         else {
@@ -293,7 +293,7 @@ const GeoExplMap = (props) => {
 
         const radiusScale = d3.scaleLinear()
             .domain([d3.min(props.reducedData, d => +d.count), d3.max(props.reducedData, d => +d.count)])
-            .range([2, 15]);
+            .range([3, 20]);
 
         const getRadius = (status,item) => {
             if (status == 'grouped') {
@@ -450,7 +450,7 @@ const GeoExplMap = (props) => {
             setXSvg(d3.event.transform.x);
             setYSvg(d3.event.transform.y);
             setKSvg(d3.event.transform.k);
-            attachEvents(d3.event.transform,width,height,context,container,data,fulldata,status1,status2);
+            attachEvents(d3.event.transform,width,height,context,container,data,fulldata,status2);
             zoomed(d3.event.transform,width,height,context,data,status1,status2);
             }
             
