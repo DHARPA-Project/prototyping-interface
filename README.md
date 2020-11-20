@@ -13,11 +13,11 @@ Please note that at the moment the workflow that is being developed (Geolocation
 **Installation**
 Requirements: Node.js/Npm and Python3 need to be intalled on your computer.
 1. Clone or download the repository and navigate there via your terminal
-1. run the following command
+2. run the following command
 ```
 npm install
 ```
-1. create a Python virtual environment:
+3. create a Python virtual environment:
 ```
 python3 -m venv venv
 ```
@@ -30,7 +30,7 @@ python3 -m venv venv
  ```
  pip3 install -r requirements.txt
  ```
- 1. Open a second terminal window, navigate to the project, and run the following command:
+ 2. Open a second terminal window, navigate to the project, and run the following command:
  ```
  npm start
  ```
