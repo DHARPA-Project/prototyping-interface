@@ -1,10 +1,10 @@
 ## General
-This prototyping interface is built with a React front-end and a Python backend. Both end exchange data via Flask. 
-User actions that trigger operations on the dataset (such as edits or advanced data analysis) are processed by Python and then sent back to the front-end.
+This prototyping interface's goal is to enable the production of functional prototypes for user testing purposes.
+It is built with a React front-end and a Python backend. Both end exchange data via Flask. User actions that trigger operations on their initial dataset (such as edits or advanced data analysis) are processed by Python and then sent back to the front-end.
 
 ## Current stage
-The available workflows are currently under development and aren't for the moment fully functional.
-They should reach a Minimum Viable Product test stage in the next months. This means that they will be ready for user tests enabling further functionalities and design iterations, before being released as an alpha and then beta version.
+The available code is currently under development and isn't for the moment fully functional.
+The first modules should reach a Minimum Viable Product Test stage in the next weeks and months. This means that they will be ready for user testing, in order to enable further functionalities and design iterations, before being released (possibly with a different technical stack) as an alpha and then beta version.
 
 ## Installation
 (coming soon)
@@ -12,5 +12,4 @@ They should reach a Minimum Viable Product test stage in the next months. This m
 ## How to use
 
 ### 1. Home Page
-At this stage, only the left part of the panel is active. This left part enables access to the workflows that are currently available.
-In the future, the right panel will give users the possibility to create their own workflows, and freely access the various functionalities that are shown on the left, without following a special order.
+At this stage, only the Geolocation workflow is active, on the left part of the panel.
