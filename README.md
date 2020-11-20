@@ -3,7 +3,7 @@ This prototyping interface's goal is to enable the production of functional prot
 It is built with a React front-end and a Python backend. Both end exchange data via Flask. User actions that trigger operations on their initial dataset (such as edits or advanced data analysis) are processed by Python and then sent back to the front-end.
 
 ## Current stage
-The available code is currently under development and isn't for the moment fully functional.
+The available code is currently under development and isn't for the moment fully functional.<br/>
 The first modules should reach a Minimum Viable Product Test stage in the next weeks and months. This means that they will be ready for user testing, in order to enable further functionalities and design iterations, before being fully developed and released (probably with a different technical stack) as an alpha and then beta version.
 
 ## Installation and running the project
@@ -37,5 +37,31 @@ python3 -m venv venv
 
 ## How to use
 
-### 1. Home Page
+### Home Page
 At this stage, only the Geolocation workflow is active, on the left part of the panel.
+
+### Geolocation workflow
+Contributors:<br/>
+Dr. Angela R. Cunningham, Postdoctoral Research Associate<br/>
+angela.cunningham@uni.lu<br/>
+Mariella de Crouy Chanel, Developer<br/>
+mariella.decrouychanel@uni.lu<br/>
+DHARPA Team<br/>
+
+## Geolocation workflow, step 1 ##
+The first step of the geolocation workflow assists users in editing their dataframe through map exploration.<br/>
+Requirement: CSV file containing coordinates, in the form of a latitude and a longitude column.<br>
+**Functionalities**
+1. Map exploration
+- Information about mappable and unmappable rows
+- Zooming and panning, information about the number of observations displayed on the map
+- Hovering on a point to display tooltip information, clicking on a point to display a list of neighbour points in a table below the map
+- Selection of columns to display in map tooltip
+- Handling overlapping points display, either by displaying darker points, or by displaying bigger circles proportional in size to the number of overlapping points
+- Create a categorical view on the unique values from a column
+- Filtering points displayed on map
+
+
+
+
+
