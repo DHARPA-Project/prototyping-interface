@@ -129,7 +129,7 @@ const GeoDataLoad = () => {
     <Divider></Divider>
     <GeoMappableStats  stats = {[absentCoordinates.length,unmappableItems.length,fullMappableItems.length, userDataLen]}/>
     
-    <Header size='small'>3. Explore your dataset</Header>
+    <Header size='small'>3. Visually explore your dataset</Header>
     </Container>
     <Divider hidden />
 

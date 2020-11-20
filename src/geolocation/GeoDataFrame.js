@@ -177,7 +177,9 @@ return props.neighborsTab !== null ? (
                 <Button icon = 'edit' />
                 <Button icon ='save' />
                 <Button icon ='download' />
+                <Button>Add note</Button>
             </Button.Group>
+            
             </Grid.Column>
             <Grid.Column width = {12}>
               <Table striped>
