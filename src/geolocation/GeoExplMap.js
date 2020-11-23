@@ -27,11 +27,15 @@ const GeoExplMap = (props) => {
     const [tooltipData, setTooltipData] = useState(null);
     const [tooltipDisplay, setTooltipDisplay] = useState('none');
 
+    const [tooltip1, setTooltip1] = useState(props.cols[0])
+    const [tooltip2, setTooltip2] = useState(props.cols[1])
+    const [tooltip3, setTooltip3] = useState(props.cols[2])
+
     const [delaunayData, setDelaunayData] = useState(props.data)
 
     const [neighborPoints, setNeigborPoints] = useState(null);
     
-    const colors_cat = [d3.schemeSet3[1],d3.schemeSet3[2],d3.schemeSet3[3],d3.schemeSet3[4] ]
+    const colors_cat = [d3.schemeSet3[1],d3.schemeSet3[2],d3.schemeSet3[3],d3.schemeSet3[4] ];
 
 
     // menu functions //
@@ -207,6 +211,22 @@ const GeoExplMap = (props) => {
 
       let createCols = (event,data) => {
         data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt);
+        
+      }
+
+      let tooltipCols = (event,data) => {
+        
+        if (data.id == 1) {
+            setTooltip1(data.value);
+        }
+
+        if (data.id == 2) {
+            setTooltip2(data.value);
+        }
+
+        if (data.id == 3) {
+            setTooltip3(data.value);
+        }
         
       }
     
@@ -481,7 +501,7 @@ const GeoExplMap = (props) => {
     const TooltipContent = []
 
        if ( tooltipData!= null) {
-            TooltipContent.push(<Card.Content><span>ersatz_id: {props.fullData[tooltipData]['ersatz_id']} | </span><span>rawPOB: {props.fullData[tooltipData]['rawPOB']} | </span><span>GCcleanPOBprec: {props.fullData[tooltipData]['GCcleanPOBprec']}</span></Card.Content>)
+            TooltipContent.push(<Card.Content><span>{tooltip1}: {props.fullData[tooltipData][tooltip1]} | </span><span>{tooltip2}: {props.fullData[tooltipData][tooltip2]} | </span><span>{tooltip3}: {props.fullData[tooltipData][tooltip3]}</span></Card.Content>)
        }
 
     return (
@@ -490,10 +510,13 @@ const GeoExplMap = (props) => {
             <Grid.Row>
             <Grid.Column width = {3} style = {{marginLeft: '2%'}} />
             <Grid.Column width = {7}>
-            <Tooltip />
-            <Container ><div style = {{display: tooltipDisplay}}>
-                    {TooltipContent}
-            </div></Container>
+            <Container >
+                <div style = {{display: tooltipDisplay}}>
+                    {tooltipData!= null &&
+                    <Card.Content><span>{tooltip1}: {props.fullData[tooltipData][tooltip1]} | </span><span>{tooltip2}: {props.fullData[tooltipData][tooltip2]} | </span><span>{tooltip3}: {props.fullData[tooltipData][tooltip3]}</span></Card.Content>
+                    }   
+                </div>
+            </Container>
             </Grid.Column>
             <Grid.Column width = {5}>
             <Container fluid textAlign='right'> <p>{displayedPoints} of {totalPoints} mappable observations displayed. <Icon name='info circle' color='grey'></Icon></p>  
@@ -502,7 +525,7 @@ const GeoExplMap = (props) => {
             </Grid.Row>
             <Grid.Row>
             <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
-            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} />
+            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} cols = {props.cols} tooltipCols = {tooltipCols}/>
             </Grid.Column>
             <Grid.Column width = {12}>
                 <div style={{position: 'relative'}}>

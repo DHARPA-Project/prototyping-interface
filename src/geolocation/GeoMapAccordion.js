@@ -13,12 +13,23 @@ const GeoMapAccordion = (props) => {
         setActiveIndex(newIndex);
       }
 
-      const colOptions = [
+      const colOptions = [];
+
+      props.cols.map((item,index) => {
+
+        colOptions.push({key: index, text: item, value: item})
+
+      })
+      
+      
+      /*
+      
+      [
         {
         key: 3,
         text: 'GCcleanPOBprec',
         value: 'GCcleanPOBprec'}
-      ]
+      ] */
 
 
 
@@ -41,9 +52,9 @@ const GeoMapAccordion = (props) => {
 
           <p>Select up to 3 fields to display in tooltip.</p>
           <Form.Group grouped>
-          <Form.Select fluid placeholder='ersatz_id' />
-          <Form.Select fluid placeholder='rawPOB' />
-          <Form.Select fluid placeholder='GCcleanPOBprec' />
+          <Form.Select fluid placeholder='Tooltip field 1' options={colOptions} onChange = {props.tooltipCols} id='1'/>
+          <Form.Select fluid placeholder='Tooltip field 2' options={colOptions} onChange = {props.tooltipCols} id ='2'/>
+          <Form.Select fluid placeholder='Tooltip field 3' options={colOptions} onChange = {props.tooltipCols} id = '3'/>
           </ Form.Group >
           </Accordion.Content>
         </Menu.Item>

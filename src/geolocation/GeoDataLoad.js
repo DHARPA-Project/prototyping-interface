@@ -10,6 +10,7 @@ const absentCoordinates = []
 const mappableItems = [] // with just lat and long for delaunay processes
 const fullMappableItems = [] // with all columns 
 const initDataDelaunay = []
+let columns;
 
 const GeoDataLoad = () => {
 
@@ -42,6 +43,8 @@ const GeoDataLoad = () => {
 
       d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id.csv").then(dataset => {
         setUserDataLen(dataset.length); 
+        
+        columns = dataset.columns;
         
         dataset.map((item,index ) => {
           if (isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) {
@@ -133,7 +136,7 @@ const GeoDataLoad = () => {
     </Container>
     <Divider hidden />
 
-    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItems} absTab = {absentCoordinates} mappableAll = {fullMappableItems} mappable = {fullMappableItems.length} initDelaunay = {delaunayInitData} mapColor = {mapColor}/>
+    <GeoExplMap map = {usermap} data = {delaunayData} fullData = {fullData} reducedData = {reducedData} unmapTab = {unmappableItems} absTab = {absentCoordinates} mappableAll = {fullMappableItems} mappable = {fullMappableItems.length} initDelaunay = {delaunayInitData} mapColor = {mapColor} cols = {columns}/>
     
     </>       
             

@@ -17,10 +17,13 @@ Requirements: Node.js/Npm and Python3 need to be intalled on your computer.
 ```
 npm install
 ```
-3. create a Python virtual environment:
+3. create a Python virtual environment and install python dependencies
 ```
 python3 -m venv venv
 ```
+ ```
+ pip3 install -r requirements.txt 
+ ```
 
 **Running the project**
 1. Open a first terminal window, navigate to the project, and run the following commands:
@@ -28,14 +31,13 @@ python3 -m venv venv
 . venv/bin/activate
 ```
  ```
- pip3 install -r requirements.txt
+ flask run
  ```
  2. Open a second terminal window, navigate to the project, and run the following command:
  ```
  npm start
  ```
 
-## How to use
 
 ### Home Page
 At this stage, only the Geolocation workflow is active, on the left part of the panel.
@@ -47,6 +49,7 @@ angela.cunningham@uni.lu<br/>
 Mariella de Crouy Chanel, Developer<br/>
 mariella.decrouychanel@uni.lu<br/>
 DHARPA Team<br/>
+dharpa@uni.lu
 
 ## Geolocation workflow, step 1 ##
 The first step of the geolocation workflow assists users in editing their dataframe through map exploration.<br/>
