@@ -43,6 +43,7 @@ const GeoExplMap = (props) => {
 
     // single color hue display ('overlapping points' in the map menu)
     const [mapColor, setMapColor] = useState('single');
+    const [clickCoeff, setClickCoeff] = useState(3)
 
     let getMapItems = () => {
         const width = document.getElementById('svgContainer').clientWidth;
@@ -229,6 +230,32 @@ const GeoExplMap = (props) => {
         }
         
       }
+
+      // radius for neighbour points search
+      // this impacts two variables: the size of the circle that is drawn on click on the canvas
+      // and the search radius (radiusSearch) that is used for the delaunay.findAll calculation
+      // for the moment I didn't manage to have things update upon click on the radio button
+
+      let radiusSearch = 25;
+
+      let neighbSizeChange = (value) => {
+        
+        if (value === 'small') {
+            setClickCoeff(1.5);
+            radiusSearch = 10;
+        }
+
+        if (value === 'medium') {
+            setClickCoeff(3);
+            radiusSearch = 15;
+        }
+
+        if (value === 'large') {
+            setClickCoeff(4.5);
+            radiusSearch = 20;
+        }
+
+      }
     
     // end of map menu functions
     
@@ -348,7 +375,7 @@ const GeoExplMap = (props) => {
             }
 
             if (status1 === 'mouseclick') {     
-                context.arc(props.data[p][0], props.data[p][1], getRadius(status2,props.reducedData[p])*3, 0, 2 * Math.PI);
+                context.arc(props.data[p][0], props.data[p][1], getRadius(status2,props.reducedData[p])*clickCoeff, 0, 2 * Math.PI);
                 mapClickStatus = 'on';
             }
             
@@ -399,7 +426,7 @@ const GeoExplMap = (props) => {
             return results;
           }
 
-          const items = delaunay.findAll(x,y,25);
+          const items = delaunay.findAll(x,y,radiusSearch);
           return items
     }
 
@@ -525,7 +552,7 @@ const GeoExplMap = (props) => {
             </Grid.Row>
             <Grid.Row>
             <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
-            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} cols = {props.cols} tooltipCols = {tooltipCols}/>
+            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} cols = {props.cols} tooltipCols = {tooltipCols} neighbSizeChange = {neighbSizeChange }/>
             </Grid.Column>
             <Grid.Column width = {12}>
                 <div style={{position: 'relative'}}>

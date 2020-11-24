@@ -6,6 +6,7 @@ import GeoMapCategories from './GeoMapCategories';
 const GeoMapAccordion = (props) => {
 
     const [activeIndex, setActiveIndex] = useState(null);
+    const [radiusLevel, setRadiusLevel] = useState('medium');
 
     let handleClick = (e, titleProps) => {
         const { index } = titleProps;
@@ -13,24 +14,16 @@ const GeoMapAccordion = (props) => {
         setActiveIndex(newIndex);
       }
 
-      const colOptions = [];
+    const colOptions = [];
 
-      props.cols.map((item,index) => {
-
+    props.cols.map((item,index) => {
         colOptions.push({key: index, text: item, value: item})
-
       })
-      
-      
-      /*
-      
-      [
-        {
-        key: 3,
-        text: 'GCcleanPOBprec',
-        value: 'GCcleanPOBprec'}
-      ] */
 
+    let radiusChange = (e,{value}) => {
+      setRadiusLevel(value);
+      props.neighbSizeChange(value);
+    }
 
 
     return (
@@ -70,9 +63,9 @@ const GeoMapAccordion = (props) => {
  
             <p>Select search radius to display neighbor points </p>
             <Form.Group grouped>
-            <Form.Radio label='Small' name='size' type='radio' value='small' />
-            <Form.Radio label='Medium' name='size' type='radio' value='medium' checked/>
-            <Form.Radio label='Large' name='size' type='radio' value='large' />
+              <Form.Radio label='Small' type='radio' value='small' checked={radiusLevel === 'small'} onChange={radiusChange} />
+              <Form.Radio label='Medium' type='radio' value='medium' checked={radiusLevel === 'medium'} onChange={radiusChange} />
+              <Form.Radio label='Large' type='radio' value='large' checked={radiusLevel === 'large'} onChange={radiusChange} />
             </Form.Group>
   
           </Accordion.Content>
