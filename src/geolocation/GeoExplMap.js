@@ -236,23 +236,23 @@ const GeoExplMap = (props) => {
       // and the search radius (radiusSearch) that is used for the delaunay.findAll calculation
       // for the moment I didn't manage to have things update upon click on the radio button
 
-      let radiusSearch = 25;
+      const [radiusSearch, setRadiusSearch] = useState(15);
 
       let neighbSizeChange = (value) => {
         
         if (value === 'small') {
             setClickCoeff(1.5);
-            radiusSearch = 10;
+            setRadiusSearch(5);
         }
 
         if (value === 'medium') {
-            setClickCoeff(3);
-            radiusSearch = 15;
+            setClickCoeff(3.5);
+            setRadiusSearch(10);
         }
 
         if (value === 'large') {
-            setClickCoeff(4.5);
-            radiusSearch = 20;
+            setClickCoeff(5);
+            setRadiusSearch(15);
         }
 
       }
@@ -363,7 +363,7 @@ const GeoExplMap = (props) => {
         if (status1 == 'mousemove' || status1 == 'mouseclick') {
             
             context.globalAlpha = 1;
-            context.fillStyle = 'rgba(0, 0, 0,.7)';
+            context.fillStyle = 'rgba(0, 0, 0,.15)';
             context.strokeStyle = 'rgb(0, 0, 0)';
             context.lineWidth = 1;
             
@@ -374,9 +374,10 @@ const GeoExplMap = (props) => {
                 context.arc(props.data[p][0], props.data[p][1], getRadius(status2,props.reducedData[p])*1.1, 0, 2 * Math.PI);
             }
 
-            if (status1 === 'mouseclick') {     
+            if (status1 === 'mouseclick') {   
                 context.arc(props.data[p][0], props.data[p][1], getRadius(status2,props.reducedData[p])*clickCoeff, 0, 2 * Math.PI);
                 mapClickStatus = 'on';
+                context.fill();
             }
             
             context.stroke();
@@ -512,6 +513,9 @@ const GeoExplMap = (props) => {
         const width = document.getElementById('svgContainer').clientWidth;
         const height = document.getElementById('svgContainer').clientHeight; 
 
+        // temporary fix until solution to use d3 with refs is found
+        d3.select('canvas').remove();
+
        const canvas = d3.select("#canvasContainer").append("canvas").attr('width', width).attr('height', height).style("cursor", "pointer");
 
        const container = d3.select("#canvasContainer");
@@ -521,7 +525,7 @@ const GeoExplMap = (props) => {
        attachEvents(0,width,height,context,container,props.data,props.initDelaunay,0);
        zoomed(0,width,height,context,props.data,0,0);
 
-    }, []);
+    }, [clickCoeff]);
 
 
 
