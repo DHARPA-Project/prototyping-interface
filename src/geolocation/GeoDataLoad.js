@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3'
-import {Link} from 'react-router-dom'
 import { Button, Divider, Dimmer, Table, Loader, Message, Container, Form, Select, Header } from 'semantic-ui-react'
 import GeoExplMap from './GeoExplMap';
 import GeoMappableStats from './GeoMappableStats';
 
 const unmappableItems = []
+const unmapIndex = [] // indexes of unmappable items are collected to send to python
 const absentCoordinates = []
 const mappableItems = [] // with just lat and long for delaunay processes
 const fullMappableItems = [] // with all columns 
@@ -36,25 +36,37 @@ const GeoDataLoad = () => {
     const [delaunayInitData, setDelaunayInitData] = useState(null);
     const [mapColor, setMapColor] = useState('single');
 
+    const userFileName = "anon_rosterm_id"
+
     const projection = d3.geoMercator()
+
+    
+    // file upload part is in progress (just created the html elements for now)
+    const geoFileUploader = useRef(null)
+
+    const handleFileUpload = () => {
+
+    }
 
 
     const fetchData = () => {
 
       d3.csv(process.env.PUBLIC_URL + "anon_rosterm_id.csv").then(dataset => {
-        setUserDataLen(dataset.length); 
+        
+        setUserDataLen(dataset.length);
         
         columns = dataset.columns;
         
         dataset.map((item,index ) => {
           if (isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) || isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1])) {
             unmappableItems.push(item)
+            unmapIndex.push(index)
           }
         
           else if ( +item.GCcleanPOBlon == 0 || +item.GCcleanPOBlat == 0 || +item.GCcleanPOBlon == '' ||   +item.GCcleanPOBlat == '') {
             absentCoordinates.push(item)
+            unmapIndex.push(index)
           }
-  
           else {
 
             initDataDelaunay.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
@@ -63,10 +75,19 @@ const GeoDataLoad = () => {
             fullMappableItems.push(item);
   
           }
-
-        }); }).then(() => {
+        });
+      
+      
+      
+      }).then(() => {
           setFullData(fullMappableItems);
           setDelaunayInitData(initDataDelaunay);
+
+          const unmapString = unmapIndex.join('-')
+
+          fetch(`/geo_file1/${unmapString}/${userFileName}`).then(res => res.json()).then(data => {
+            console.log(data)
+          })
 
         });
 
@@ -104,7 +125,8 @@ const GeoDataLoad = () => {
     <>
     <Container text>
     <Header size='small'>1. Upload data and basemap</Header>
-    <Button icon='upload' content = 'Upload dataset (csv)' />
+    <Button icon='upload' content = 'Upload dataset (csv)'  onClick= {() => geoFileUploader.current.click() }/>
+    <input type='file' hidden ref={geoFileUploader} onChange={handleFileUpload} />
     <Button.Group>
     <Button>Load default basemap</Button>
     <Button.Or />
@@ -114,7 +136,7 @@ const GeoDataLoad = () => {
     <Header size='small'>2. Select latitude and longitude</Header>
     <Message>To enable map display, indicate which columns of your dataset describe latitude and longitude.</Message>
     <Form size='mini'>
-        <Form.Group widths='equal'>
+        <Form.Group widths='equal'> 
         <Form.Field
           control={Select}
           label = 'Latitude'
@@ -148,8 +170,3 @@ const GeoDataLoad = () => {
 }
 
 export default GeoDataLoad;
-
-/*
- <Header size='small'>Unmappable observations</Header>
-        <Message>The table below provides information about points that couldn't be plotted on the map, and points without latitude and longitude.</Message>
-        */
