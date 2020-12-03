@@ -20,5 +20,9 @@ def geo_file1(file_exceptions,file_name):
     # collect id of unmappable items listed as a string in file_exception
     exceptions = file_exceptions.split('-')
     exceptions = [int(i) for i in exceptions] 
-    reducedData = geo_overlapping_merge(file_name,exceptions)
-    return '{"hello": "hello"}'
+    reduced_data = geo_overlapping_merge(file_name,exceptions)
+
+    result = {
+        "reduced-data": reduced_data
+    }
+    return result

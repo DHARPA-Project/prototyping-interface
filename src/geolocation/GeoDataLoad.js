@@ -85,6 +85,7 @@ const GeoDataLoad = () => {
 
           const unmapString = unmapIndex.join('-')
 
+          // sending python ids of unmappable rows and user file name
           fetch(`/geo_file1/${unmapString}/${userFileName}`).then(res => res.json()).then(data => {
             console.log(data)
           })
