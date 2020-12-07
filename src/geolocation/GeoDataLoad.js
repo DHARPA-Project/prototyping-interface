@@ -21,7 +21,7 @@ const GeoDataLoad = () => {
      const [usermap, setUsermap] = useState(null);
 
      // dataframe with unique places that will be created in Python from user data (for the moment it is created with a notebook)
-     const [reducedData, setReducedData ] = useState(null);
+     const [reducedData, setReducedData ] = useState([]);
 
     // mappable items from reduced dataset
     const [fullData, setFullData] = useState(null);
@@ -47,7 +47,6 @@ const GeoDataLoad = () => {
     const handleFileUpload = () => {
 
     }
-
 
     const fetchData = () => {
 
@@ -87,32 +86,34 @@ const GeoDataLoad = () => {
 
           // sending python ids of unmappable rows and user file name
           fetch(`/geo_file1/${unmapString}/${userFileName}`).then(res => res.json()).then(data => {
-            console.log(data)
+
+            d3.csv(process.env.PUBLIC_URL + data['reduced-data'][0]).then(reducedData => { 
+
+              const reducedDataMappable = reducedData.filter((item,index) => { 
+                return  ((!isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) && !isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]))  && +item.GCcleanPOBlon !== 0  && +item.GCcleanPOBlat !== 0  && +item.GCcleanPOBlon !== ' '  &&   +item.GCcleanPOBlat !== ' ' )
+              })
+    
+              setReducedData(reducedDataMappable);
+    
+              reducedDataMappable.map((item,index) => {    
+                    mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
+                })
+    
+              }).then(() => {
+                setDelaunayData(mappableItems);
+              });
+
           })
 
         });
 
       // "reduced data" dataset will be created with Python from the first dataset after user upload, in order to group circles that have same coordinates and provide with a "count" column used for single color hue/displaying one point on the map for same location to improve perf
-     
-      d3.csv(process.env.PUBLIC_URL + "reduced_data2.csv").then(reducedData => { 
-
-          const reducedDataMappable = reducedData.filter((item,index) => { 
-            return  ((!isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) && !isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]))  && +item.GCcleanPOBlon !== 0  && +item.GCcleanPOBlat !== 0  && +item.GCcleanPOBlon !== ' '  &&   +item.GCcleanPOBlat !== ' ' )
-          })
-
-          setReducedData(reducedDataMappable);
-
-          reducedDataMappable.map((item,index) => {    
-                mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
-            })
-
-          }).then(() => {
-            setDelaunayData(mappableItems);
-          }); 
         
       d3.json(process.env.PUBLIC_URL + "world_1914.json").then(usermap => {
               setUsermap(usermap)
             });
+
+          
 
   }
     
@@ -120,9 +121,7 @@ const GeoDataLoad = () => {
     fetchData()
     }, [])
 
-    
-
-  return (usermap !== null && delaunayData !== null && fullData !== null && unmappableItems !== null && delaunayInitData !== null) ? (        
+  return (usermap !== null && delaunayData !== null && fullData !== null && unmappableItems !== null && delaunayInitData !== null && reducedData !== null) ? (        
     <>
     <Container text>
     <Header size='small'>1. Upload data and basemap</Header>
@@ -167,7 +166,7 @@ const GeoDataLoad = () => {
             <Dimmer active inverted>
               <Loader size='medium' inverted content='Loading' />
             </Dimmer>
-          </Container>)     
+          </Container>)    
 }
 
 export default GeoDataLoad;
