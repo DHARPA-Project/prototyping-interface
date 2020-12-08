@@ -12,6 +12,7 @@ const fullMappableItems = [] // with all columns
 const initDataDelaunay = []
 let columns;
 
+
 const GeoDataLoad = () => {
 
     // Map displays points from "reduced" dataset, and tooltips will be displayed for points that are visible
@@ -42,9 +43,29 @@ const GeoDataLoad = () => {
 
     
     // file upload part is in progress (just created the html elements for now)
-    const geoFileUploader = useRef(null)
+    const geoFileUploader = useRef(null);
 
     const handleFileUpload = () => {
+      // this will get user file
+    }
+
+    const getReducedDataset = (unmapString,userFileName) => {
+      
+      fetch(`/geo_file1/${unmapString}/${userFileName}`).then(res => res.json()).then(data => {
+
+        d3.csv(process.env.PUBLIC_URL + data['reduced-data'][0]).then(reducedData => { 
+
+          setReducedData(reducedData);
+
+          reducedData.map((item,index) => {    
+                mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
+            })
+
+          }).then(() => {
+            setDelaunayData(mappableItems);
+          });
+
+      })
 
     }
 
@@ -81,30 +102,12 @@ const GeoDataLoad = () => {
       }).then(() => {
           setFullData(fullMappableItems);
           setDelaunayInitData(initDataDelaunay);
-
-          const unmapString = unmapIndex.join('-')
+          
+          const unmapString = unmapIndex.join('-');
+          getReducedDataset(unmapString,userFileName);
 
           // sending python ids of unmappable rows and user file name
-          fetch(`/geo_file1/${unmapString}/${userFileName}`).then(res => res.json()).then(data => {
-
-            d3.csv(process.env.PUBLIC_URL + data['reduced-data'][0]).then(reducedData => { 
-
-              const reducedDataMappable = reducedData.filter((item,index) => { 
-                return  ((!isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0]) && !isNaN(projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]))  && +item.GCcleanPOBlon !== 0  && +item.GCcleanPOBlat !== 0  && +item.GCcleanPOBlon !== ' '  &&   +item.GCcleanPOBlat !== ' ' )
-              })
-    
-              setReducedData(reducedDataMappable);
-    
-              reducedDataMappable.map((item,index) => {    
-                    mappableItems.push([projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[0],projection([+item.GCcleanPOBlon, +item.GCcleanPOBlat])[1]]);
-                })
-    
-              }).then(() => {
-                setDelaunayData(mappableItems);
-              });
-
-          })
-
+         
         });
 
       // "reduced data" dataset will be created with Python from the first dataset after user upload, in order to group circles that have same coordinates and provide with a "count" column used for single color hue/displaying one point on the map for same location to improve perf

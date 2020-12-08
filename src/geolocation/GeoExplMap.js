@@ -212,6 +212,7 @@ const GeoExplMap = (props) => {
 
       let createCols = (event,data) => {
         data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt);
+        console.log(data.value)
         
       }
 
