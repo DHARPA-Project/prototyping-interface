@@ -232,9 +232,8 @@ const GeoExplMap = (props) => {
       }
 
       let createCols = (event,data) => {
+        setMaxCatReached(null);
         data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt,data.value);
-        //console.log(data.value)
-        //console.log(data.zoomevt)
         
       }
 

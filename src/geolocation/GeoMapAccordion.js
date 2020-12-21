@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Accordion, Form, Dropdown, Radio} from 'semantic-ui-react'
+import { Menu, Accordion, Form, Dropdown, Message} from 'semantic-ui-react'
 import GeoMapCategories from './GeoMapCategories';
 
 
@@ -98,8 +98,14 @@ const GeoMapAccordion = (props) => {
            
               <p>Create categories from a column</p>
               <Dropdown clearable fluid placeholder='Select a column' search selection zoomevt = {props.zoomLevel} options={colOptions} onChange={props.colOptions}/>
+              
+              {
+             props.maxCatReached === 1 && (
+             <Message>Too many unique values in this column to create category list. Choose one with a maximum of 12 unique values.</Message>)
+            }
     
             <GeoMapCategories catList = {props.catList} displayCategory = {props.displayCategory} zoomLevel = {props.zoomLevel} maxCatReached = {props.maxCatReached}/>
+            
             
           </Accordion.Content>
         </Menu.Item>
@@ -117,7 +123,8 @@ const GeoMapAccordion = (props) => {
           <Form.Select fluid placeholder='Select column' />
           <Form.Select fluid placeholder='Select value' />
           </ Form.Group >
-            </Accordion.Content>
+          </Accordion.Content>
+            
         </Menu.Item>
 
        
