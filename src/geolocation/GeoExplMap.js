@@ -34,6 +34,7 @@ const GeoExplMap = (props) => {
     const [delaunayData, setDelaunayData] = useState(props.data)
 
     const [neighborPoints, setNeigborPoints] = useState(null);
+
     
     const colors_cat = [d3.schemeSet3[1],d3.schemeSet3[2],d3.schemeSet3[3],d3.schemeSet3[4] ];
 
@@ -120,6 +121,9 @@ const GeoExplMap = (props) => {
 
       const [catList, setCatlist] = useState([]);
 
+      //const used to display a message if user selects columns that contain too many unique values to create categorical display from them
+      const [maxCatReached, setMaxCatReached] = useState(null);
+
       const findColor = (item) => {
         let color = 'rgba(0,0,0,0)';
          switch (item) {
@@ -154,8 +158,6 @@ const GeoExplMap = (props) => {
 
         let newdata = []
         let newitemsdata = []
-
-        // this will be modified
 
 
         switch(value) {            
@@ -193,26 +195,46 @@ const GeoExplMap = (props) => {
         zoomed(zoomevt,width,height,context,newdata[0],0,'cat')
       }
       
-      let createCat = (zoomevt) => {
+      let createCat = (zoomevt,col) => {
 
-        const cats = ['county', 'plus', 'state', 'town'];
-        
-        const catListItems = [];
+        // reset max cat reached
+        setMaxCatReached(null);
 
-        cats.map((item,index) => {        
-            const res =  props.fullData.filter((item) => {
-                return item['GCcleanPOBprec'] == cats[index]
+        // check that thers is less than the max number for categories
+        // find the column in the dataframe and count unique values
+
+        // get unique values in selected col
+        let extractColumn = (arr, column) => arr.map(x=>x[column]);
+        let uniqueCat = [...new Set(extractColumn(props.fullData,col))]
+
+        //check that unique values is not more than 12, if it is, prompt user to select another column instead
+
+        // steps to perform if unique values < 12
+        const displayCats = (uniqueCat,col) => {
+            const catListItems = [];
+            uniqueCat.map((item,index) => {        
+                const res =  props.fullData.filter((item) => {
+                    return item[col] == uniqueCat[index]
+                })
+                catListItems.push([uniqueCat[index],res.length,colors_cat[index]])
             })
-            catListItems.push([cats[index],res.length,colors_cat[index]])
-        })
+            setCatlist(catListItems)
+            displayCategory(zoomevt,'all',catListItems)
+        }
 
-        setCatlist(catListItems)
-        displayCategory(zoomevt,'all',catListItems)
+        // display error message if unique values > 12
+        const displayError = () => {
+            setMaxCatReached(1);
+        }
+
+        uniqueCat.length > 12 ? displayError():displayCats(uniqueCat,col)
+       
       }
 
       let createCols = (event,data) => {
-        data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt);
-        console.log(data.value)
+        data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt,data.value);
+        //console.log(data.value)
+        //console.log(data.zoomevt)
         
       }
 
@@ -557,7 +579,7 @@ const GeoExplMap = (props) => {
             </Grid.Row>
             <Grid.Row>
             <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
-            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} cols = {props.cols} tooltipCols = {tooltipCols} neighbSizeChange = {neighbSizeChange }/>
+            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} cols = {props.cols} tooltipCols = {tooltipCols} neighbSizeChange = {neighbSizeChange } maxCatReached = {maxCatReached}/>
             </Grid.Column>
             <Grid.Column width = {12}>
                 <div style={{position: 'relative'}}>

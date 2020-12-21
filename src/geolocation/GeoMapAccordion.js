@@ -99,7 +99,7 @@ const GeoMapAccordion = (props) => {
               <p>Create categories from a column</p>
               <Dropdown clearable fluid placeholder='Select a column' search selection zoomevt = {props.zoomLevel} options={colOptions} onChange={props.colOptions}/>
     
-            <GeoMapCategories catList = {props.catList} displayCategory = {props.displayCategory} zoomLevel = {props.zoomLevel} />
+            <GeoMapCategories catList = {props.catList} displayCategory = {props.displayCategory} zoomLevel = {props.zoomLevel} maxCatReached = {props.maxCatReached}/>
             
           </Accordion.Content>
         </Menu.Item>

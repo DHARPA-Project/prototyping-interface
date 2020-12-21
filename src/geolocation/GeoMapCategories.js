@@ -10,6 +10,10 @@ const GeoMapCategories = (props) => {
       props.displayCategory(props.zoomLevel,value);
     }
 
+
+
+ 
+
     const listItems = props.catList.map((item,index) => {
         return(
             <Table.Row>
@@ -23,8 +27,10 @@ const GeoMapCategories = (props) => {
         <Table.Cell> {item[1]} </Table.Cell>
             </Table.Row>
           )
-
     })
+
+
+    console.log(props.maxCatReached)
 
   
     return props.catList.length > 0 && (
