@@ -7,7 +7,7 @@ const GeoMapCategories = (props) => {
 
     const  handleChange = (e, { value }) => {
       setActiveItem(value);
-      props.displayCategory(props.zoomLevel,value);
+      props.displayCategory(props.zoomLevel,value,props.catSel);
     }
 
     const listItems = props.catList.map((item,index) => {

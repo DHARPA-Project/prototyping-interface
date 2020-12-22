@@ -47,6 +47,7 @@ const GeoExplMap = (props) => {
     const [clickCoeff, setClickCoeff] = useState(3)
 
     let getMapItems = () => {
+        // need to see how/if this can be done properly with refs
         const width = document.getElementById('svgContainer').clientWidth;
         const height = document.getElementById('svgContainer').clientHeight; 
         const canvas = d3.select('canvas');
@@ -59,42 +60,39 @@ const GeoExplMap = (props) => {
         setMapColor(value[0]);
         switch(value[0]) {
             case 'color':
-                createColorHue(value[1]);
+                createSingleColorHue(value[1]);
                 break;
             case 'grouped':
                 createClusters(value[1]);
                 break;
             default:
                 resetMap(value[1])
-
         }
-            
       };
   
-      let createColorHue = (evt) => {
+      // colors to show spots where points are overlapping darker
+      let createSingleColorHue = (evt) => {
+            const [width,height,canvas,container,context] = getMapItems()
+            const colors = ['rgb(47, 126, 188)', 'rgb(24, 100, 170)','rgb(8, 61, 126)' ,'rgb(8,48,107)']
+    
+            const interpolate = d3.interpolateRgbBasis(colors);
+    
+            const colorScale = d3.scaleLinear()
+                .domain([d3.min(props.reducedData, d => +d.count), d3.max(props.reducedData, d => +d.count)])
+                .range([0, 3]);
+    
+            const data = props.data.map((element,index) => (
+                { 0:element[0], 1:element[1], color: interpolate(colorScale(+props.reducedData[index].count)), count: +props.reducedData[index].count
+            }));
+        
+            initParams(width,height,context,container,data,props.initDelaunay,0,0)
+            attachEvents(evt,width,height,context,container,data,props.initDelaunay,0);
+            zoomed(evt,width,height,context,data,0,0)
+  
+        }
 
-        const [width,height,canvas,container,context] = getMapItems()
-  
-        const colors = ['rgb(47, 126, 188)', 'rgb(24, 100, 170)','rgb(8, 61, 126)' ,'rgb(8,48,107)']
-  
-        const interpolate = d3.interpolateRgbBasis(colors);
-  
-        const colorScale = d3.scaleLinear()
-            .domain([d3.min(props.reducedData, d => +d.count), d3.max(props.reducedData, d => +d.count)])
-            .range([0, 3]);
-  
-        const data = props.data.map((element,index) => (
-            { 0:element[0], 1:element[1], color: interpolate(colorScale(+props.reducedData[index].count)), count: +props.reducedData[index].count
-          }));
-       
-        initParams(width,height,context,container,data,props.initDelaunay,0,0)
-        attachEvents(evt,width,height,context,container,data,props.initDelaunay,0);
-        zoomed(evt,width,height,context,data,0,0)
-  
-      }
-
+      // grouping overlapping points in larger circles
       let createClusters = (evt) => {
-
         const [width,height,canvas,container,context] = getMapItems()
   
         const data = props.data.map((element,index) => (
@@ -104,7 +102,6 @@ const GeoExplMap = (props) => {
         initParams(width,height,context,container,data,props.reducedData,0,'grouped')
         attachEvents(evt,width,height,context,container,data,props.reducedData,'grouped');
         zoomed(evt,width,height,context,data,0,'grouped')
-  
       }
 
 
@@ -119,10 +116,11 @@ const GeoExplMap = (props) => {
 
       // categorical display
 
-      const [catList, setCatlist] = useState([]);
+      const [catList, setCatlist] = useState([])
+      const [catSel, setCatSel] = useState(null)
 
       //const used to display a message if user selects columns that contain too many unique values to create categorical display from them
-      const [maxCatReached, setMaxCatReached] = useState(null);
+      const [maxCatReached, setMaxCatReached] = useState(null)
 
       const findColor = (item) => {
         let color = 'rgba(0,0,0,0)';
@@ -144,7 +142,7 @@ const GeoExplMap = (props) => {
          return color;
      }
 
-     const filterInitData = (filter) => {
+    /* const filterInitData = (filter) => {
          const data = []
          props.mappableAll.map(item =>  {
              if (item['GCcleanPOBprec'] == filter) {
@@ -152,26 +150,28 @@ const GeoExplMap = (props) => {
              }
          })
          return data;
-        }
+        } */
 
-     const catData = (value,data) => {
+     const catData = (value,data,selectedCol) => {
 
         let newdata = []
         let newitemsdata = []
 
-
         switch(value) {            
             case 'all':
                 data.map((element,index) => {
-                    newdata.push({ 0:element[0], 1:element[1], color: findColor(props.reducedData[index]['GCcleanPOBprec'])})
+                    newdata.push({ 0:element[0], 1:element[1], color: findColor(props.reducedData[index][selectedCol])})
                 });
                 newitemsdata = props.initDelaunay;
                 break;
 
             default:
+                let val = value
                 data.map((element,index) => {
-                    if (props.reducedData[index]['GCcleanPOBprec'] == value) {
-                        newdata.push({ 0:element[0], 1:element[1], color: findColor(props.reducedData[index]['GCcleanPOBprec'])})
+
+                    if (props.reducedData[index][selectedCol] == val) {
+
+                        newdata.push({ 0:element[0], 1:element[1], color: findColor(props.reducedData[index][selectedCol])})
                     }
                 });
                 //newitemsdata = filterInitData(value);
@@ -184,9 +184,9 @@ const GeoExplMap = (props) => {
 
          }
 
-     let displayCategory =  (zoomevt,value,catListItems) => {
+     let displayCategory =  (zoomevt,value,selectedCol) => {
         
-        let newdata = value === undefined ? catData('all',props.data,catListItems) : catData(value,props.data,catListItems);
+        let newdata = (value === undefined || value === 'all') ? catData('all',props.data,selectedCol) : catData(value,props.data,selectedCol);
 
         const [width,height,canvas,container,context] = getMapItems()
 
@@ -198,7 +198,7 @@ const GeoExplMap = (props) => {
       let createCat = (zoomevt,col) => {
 
         // reset max cat reached
-        setMaxCatReached(null);
+        //setMaxCatReached(null);
 
         // check that thers is less than the max number for categories
         // find the column in the dataframe and count unique values
@@ -211,6 +211,7 @@ const GeoExplMap = (props) => {
 
         // steps to perform if unique values < 12
         const displayCats = (uniqueCat,col) => {
+            
             const catListItems = [];
             uniqueCat.map((item,index) => {        
                 const res =  props.fullData.filter((item) => {
@@ -219,7 +220,7 @@ const GeoExplMap = (props) => {
                 catListItems.push([uniqueCat[index],res.length,colors_cat[index]])
             })
             setCatlist(catListItems)
-            displayCategory(zoomevt,'all',catListItems)
+            displayCategory(zoomevt,'all',col)
         }
 
         // display error message if unique values > 12
@@ -231,9 +232,10 @@ const GeoExplMap = (props) => {
        
       }
 
-      let createCols = (event,data) => {
-        setMaxCatReached(null);
-        data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt,data.value);
+      let colOptions = (event,data) => {
+        setMaxCatReached(null)
+        setCatSel(data.value)
+        data.value == '' ? resetMap(data.zoomevt):createCat(data.zoomevt,data.value)
         
       }
 
@@ -578,7 +580,7 @@ const GeoExplMap = (props) => {
             </Grid.Row>
             <Grid.Row>
             <Grid.Column width = {3} style = {{marginLeft: '2%'}}>
-            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {createCols} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} cols = {props.cols} tooltipCols = {tooltipCols} neighbSizeChange = {neighbSizeChange } maxCatReached = {maxCatReached}/>
+            <GeoMapAccordion colorChange = {handleChangeColor} colorStatus = {mapColor} colOptions = {colOptions} catList = {catList} zoomLevel = {{k: kSvg, x: xSvg, y: ySvg}} displayCategory = {displayCategory} cols = {props.cols} tooltipCols = {tooltipCols} neighbSizeChange = {neighbSizeChange } maxCatReached = {maxCatReached} catSel = {catSel}/>
             </Grid.Column>
             <Grid.Column width = {12}>
                 <div style={{position: 'relative'}}>

@@ -15,6 +15,7 @@ const GeoMapAccordion = (props) => {
       }
 
     const colOptions = [];
+    
 
     props.cols.map((item,index) => {
         colOptions.push({key: index, text: item, value: item})
@@ -24,7 +25,6 @@ const GeoMapAccordion = (props) => {
       setRadiusLevel(value);
       props.neighbSizeChange(value);
     }
-
 
     return (
 
@@ -104,7 +104,7 @@ const GeoMapAccordion = (props) => {
              <Message>Too many unique values in this column to create category list. Choose one with a maximum of 12 unique values.</Message>)
             }
     
-            <GeoMapCategories catList = {props.catList} displayCategory = {props.displayCategory} zoomLevel = {props.zoomLevel} maxCatReached = {props.maxCatReached}/>
+            <GeoMapCategories catList = {props.catList} displayCategory = {props.displayCategory} zoomLevel = {props.zoomLevel} maxCatReached = {props.maxCatReached} catSel={props.catSel}/>
             
             
           </Accordion.Content>
